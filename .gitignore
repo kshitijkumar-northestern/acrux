@@ -151,6 +151,12 @@ vite.config.ts.timestamp-*
 .vercel
 next-env.d.ts
 
+# Python bot caches (scripts/bots)
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+
 # Local-only reference folders (never committed)
 Nobell-Decentralized-Equity-Marketplace/
 
