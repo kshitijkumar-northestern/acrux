@@ -141,3 +141,22 @@ dist
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
+
+# Next.js scaffold additions
+/.next/
+/out/
+/.pnp
+*.pem
+.DS_Store
+.vercel
+next-env.d.ts
+
+# Local-only reference folders (never committed)
+Nobell-Decentralized-Equity-Marketplace/
+
+# Team-only docs (plans, kickoffs, internal notes — never committed)
+docs/private/
+
+# Held back during the build — resurface before submission
+README.md
+AGENTS.md
