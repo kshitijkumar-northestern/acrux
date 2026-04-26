@@ -1,5 +1,6 @@
 "use client";
 
+import { VisitorPulse } from "@/components/dashboard/visitor-pulse";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
@@ -24,6 +25,7 @@ export function LiveStatus({ initial }: { initial: DashboardResponse | null }) {
 
   return (
     <Card size="sm">
+      <VisitorPulse />
       <CardContent className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-4">
           <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">

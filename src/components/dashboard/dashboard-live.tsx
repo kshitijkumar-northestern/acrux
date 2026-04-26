@@ -10,6 +10,7 @@ import { RecentPayments } from "@/components/dashboard/recent-payments";
 import { RpsSparkline } from "@/components/dashboard/rps-sparkline";
 import { SlashLog } from "@/components/dashboard/slash-log";
 import { TopStakers } from "@/components/dashboard/top-stakers";
+import { VisitorPulse } from "@/components/dashboard/visitor-pulse";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import {
@@ -25,6 +26,7 @@ export function DashboardLive({ initial }: { initial: DashboardResponse }) {
 
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-10 px-6 py-12 sm:py-16 lg:px-8">
+      <VisitorPulse />
       <DashboardHeader
         status={status}
         lastUpdated={lastUpdated}

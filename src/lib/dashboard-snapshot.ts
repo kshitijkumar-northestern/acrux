@@ -1,3 +1,4 @@
+import { bootstrapDashboardStateIfEmpty } from "./dashboard-bootstrap";
 import { listRecentPayments } from "./payments";
 import { currentPriceForWallet } from "./pricing";
 import {
@@ -110,6 +111,11 @@ export async function getDashboardSnapshot(): Promise<DashboardResponse> {
   }
 
   try {
+    // Idempotent: writes the baseline only on a fresh Redis. Every subsequent
+    // request is a single GET on the bootstrap flag (≈1ms on Upstash), so the
+    // dashboard never first-paints empty on a cold deploy.
+    await bootstrapDashboardStateIfEmpty();
+
     const [
       price,
       pool,
