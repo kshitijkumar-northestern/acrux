@@ -1,10 +1,12 @@
 "use client";
 
+import { NetworkStatus } from "@/components/dashboard/network-status";
 import {
   PoolCounter,
   TotalStakedCounter,
 } from "@/components/dashboard/pool-counter";
 import { PriceTicker } from "@/components/dashboard/price-ticker";
+import { RecentPayments } from "@/components/dashboard/recent-payments";
 import { RpsSparkline } from "@/components/dashboard/rps-sparkline";
 import { SlashLog } from "@/components/dashboard/slash-log";
 import { TopStakers } from "@/components/dashboard/top-stakers";
@@ -12,14 +14,22 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { useDashboard, type DashboardSnapshot } from "@/lib/use-dashboard";
+import {
+  useDashboard,
+  type DashboardHealth,
+  type DashboardSnapshot,
+} from "@/lib/use-dashboard";
 
 export default function DashboardPage() {
   const { data, error, status, lastUpdated } = useDashboard(1000);
 
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-10 px-6 py-12 sm:py-16 lg:px-8">
-      <DashboardHeader status={status} lastUpdated={lastUpdated} />
+      <DashboardHeader
+        status={status}
+        lastUpdated={lastUpdated}
+        health={data?.health ?? null}
+      />
       {error ? (
         <ErrorPanel error={error} />
       ) : !data ? (
@@ -34,28 +44,33 @@ export default function DashboardPage() {
 function DashboardHeader({
   status,
   lastUpdated,
+  health,
 }: {
   status: "idle" | "loading" | "live" | "error";
   lastUpdated: number | null;
+  health: DashboardHealth | null;
 }) {
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-      <div className="flex flex-col gap-2">
-        <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Live metrics
-        </span>
-        <h1 className="text-3xl leading-[1.1] tracking-[-0.03em] sm:text-4xl">
-          The economic immune system, live.
-        </h1>
-        <p className="text-[13px] leading-[1.6] text-muted-foreground">
-          1Hz poll of{" "}
-          <code className="rounded bg-card px-1.5 py-0.5 text-[12px]">
-            /api/dashboard
-          </code>
-          . All numbers are live Redis state.
-        </p>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="flex flex-col gap-2">
+          <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Live metrics
+          </span>
+          <h1 className="text-3xl leading-[1.1] tracking-[-0.03em] sm:text-4xl">
+            The economic immune system, live.
+          </h1>
+          <p className="text-[13px] leading-[1.6] text-muted-foreground">
+            1Hz poll of{" "}
+            <code className="rounded bg-card px-1.5 py-0.5 text-[12px]">
+              /api/dashboard
+            </code>
+            . All numbers are live Redis state.
+          </p>
+        </div>
+        <StatusPill status={status} lastUpdated={lastUpdated} />
       </div>
-      <StatusPill status={status} lastUpdated={lastUpdated} />
+      <NetworkStatus health={health} />
     </div>
   );
 }
@@ -178,6 +193,7 @@ function Tiles({ data }: { data: DashboardSnapshot }) {
         <TopStakers stakers={data.topStakers} />
         <SlashLog events={data.recentSlashes} />
       </section>
+      <RecentPayments events={data.recentPayments} />
     </>
   );
 }

@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { SlashEvent, WalletPriceQuote, WalletState } from "./types";
+import type {
+  PaymentEvent,
+  SlashEvent,
+  WalletPriceQuote,
+  WalletState,
+} from "./types";
+
+export interface DashboardHealth {
+  redis: { ok: boolean; latencyMs: number | null; error?: string };
+  mdk: { configured: boolean };
+}
 
 export interface DashboardSnapshot {
   ok: true;
@@ -9,6 +19,8 @@ export interface DashboardSnapshot {
   stake: { pool: number; totalStaked: number };
   topStakers: WalletState[];
   recentSlashes: SlashEvent[];
+  recentPayments: PaymentEvent[];
+  health: DashboardHealth;
   generatedAt: string;
 }
 
@@ -48,7 +60,22 @@ export function useDashboard(intervalMs: number = DEFAULT_INTERVAL_MS): UseDashb
       if (!data) setStatus((s) => (s === "live" ? s : "loading"));
       try {
         const res = await fetch("/api/dashboard", { cache: "no-store" });
-        const json = (await res.json()) as DashboardResponse;
+        const text = await res.text();
+        let json: DashboardResponse;
+        try {
+          json = JSON.parse(text) as DashboardResponse;
+        } catch {
+          if (!aliveRef.current) return;
+          setError({
+            ok: false,
+            error: `bad_response_${res.status}`,
+            hint:
+              text.slice(0, 160) ||
+              `/api/dashboard returned ${res.status} with a non-JSON body`,
+          });
+          setStatus("error");
+          return;
+        }
         if (!aliveRef.current) return;
         if (json.ok) {
           setData(json);
