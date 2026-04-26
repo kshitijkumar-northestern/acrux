@@ -26,7 +26,7 @@ export function SlashLog({ events }: { events: SlashEvent[] }) {
       <CardContent>
         {events.length === 0 ? (
           <p className="text-[13px] text-muted-foreground">
-            no slashes yet — abusive wallets at score floor will land here
+            no slashes yet. abusive wallets at score floor will land here.
           </p>
         ) : (
           <ul className="flex flex-col gap-2 font-mono text-[12px]">

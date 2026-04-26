@@ -43,7 +43,7 @@ export function RecentPayments({ events }: { events: PaymentEvent[] }) {
       <CardContent>
         {events.length === 0 ? (
           <p className="text-[13px] text-muted-foreground">
-            no settled payments yet — first 200 from /api/data, /api/search,
+            no settled payments yet. first 200 from /api/data, /api/search,
             /api/synth or /api/ping appears here.
           </p>
         ) : (

@@ -90,7 +90,7 @@ export async function deposit(
   sats: number,
 ): Promise<WalletState> {
   if (!Number.isFinite(sats) || sats <= 0) {
-    throw new Error("Acrux: deposit must be a positive integer of sats.");
+    throw new Error("acrux: deposit must be a positive integer of sats.");
   }
   const redis = getRedis();
   const amount = Math.floor(sats);
@@ -126,7 +126,7 @@ export async function slash(
   reason: string = "manual",
 ): Promise<{ state: WalletState; event: SlashEvent }> {
   if (!Number.isFinite(fraction) || fraction <= 0 || fraction > 1) {
-    throw new Error("Acrux: slash fraction must be in (0, 1].");
+    throw new Error("acrux: slash fraction must be in (0, 1].");
   }
   const redis = getRedis();
   const before = await getWallet(wallet);
