@@ -7,7 +7,6 @@ interface StatCardProps {
   label: string;
   value: ReactNode;
   caption?: ReactNode;
-  accent?: boolean;
   tone?: "default" | "danger";
 }
 
@@ -15,7 +14,6 @@ export function StatCard({
   label,
   value,
   caption,
-  accent,
   tone = "default",
 }: StatCardProps) {
   return (
@@ -29,11 +27,7 @@ export function StatCard({
         <div
           className={cn(
             "font-sans text-3xl font-semibold tabular-nums tracking-[-0.03em]",
-            tone === "danger"
-              ? "text-destructive"
-              : accent
-                ? "text-[color:var(--color-lightning)]"
-                : "text-foreground"
+            tone === "danger" ? "text-destructive" : "text-foreground"
           )}
         >
           {value}

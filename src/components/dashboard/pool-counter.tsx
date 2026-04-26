@@ -15,7 +15,6 @@ export function PoolCounter({
   if (poolSats === 0) captionParts.push("awaiting next abuse");
   return (
     <StatCard
-      accent
       label="protocol pool"
       value={`${SAT_FMT.format(poolSats)} sat${poolSats === 1 ? "" : "s"}`}
       caption={captionParts.join(" · ")}

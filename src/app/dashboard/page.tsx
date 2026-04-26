@@ -77,12 +77,12 @@ function StatusPill({
           : "—";
   const dotClass = cn(
     "inline-block size-1.5 rounded-full",
-    status === "live" && "bg-[color:var(--color-lightning)]",
+    status === "live" && "bg-[color:var(--color-success)]",
     status === "error" && "bg-destructive",
     status !== "live" && status !== "error" && "bg-muted-foreground"
   );
   const labelClass = cn(
-    status === "live" && "text-[color:var(--color-lightning)]",
+    status === "live" && "text-foreground",
     status === "error" && "text-destructive",
     status !== "live" && status !== "error" && "text-muted-foreground"
   );

@@ -58,7 +58,7 @@ export function TopStakers({ stakers }: { stakers: WalletState[] }) {
                   <TableCell className="text-foreground">
                     {truncate(s.wallet)}
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-[color:var(--color-lightning)]">
+                  <TableCell className="text-right tabular-nums text-foreground">
                     {SAT_FMT.format(s.stakeSats)}
                   </TableCell>
                   <TableCell
@@ -70,7 +70,7 @@ export function TopStakers({ stakers }: { stakers: WalletState[] }) {
                   <TableCell className="text-right">
                     <TierBadge tier={s.tier} />
                   </TableCell>
-                  <TableCell className="text-right tabular-nums text-[color:var(--color-lightning)]">
+                  <TableCell className="text-right tabular-nums text-muted-foreground">
                     {SAT_FMT.format(s.yieldSats)}
                   </TableCell>
                 </TableRow>
@@ -89,27 +89,26 @@ function truncate(wallet: string): string {
 }
 
 function scoreClass(score: number): string {
-  if (score >= 50) return "text-[color:var(--color-lightning)]";
   if (score >= 0) return "text-foreground";
-  if (score >= -50) return "text-amber-400";
+  if (score >= -50) return "text-muted-foreground";
   return "text-destructive";
 }
 
 function TierBadge({ tier }: { tier: Tier }) {
-  const className = {
-    trusted:
-      "border-[color:var(--color-lightning)]/40 bg-[color:var(--color-lightning-soft)] text-[color:var(--color-lightning)]",
-    neutral: "",
-    suspicious: "border-amber-400/40 bg-amber-400/10 text-amber-400",
-    abusive: "border-destructive/40 bg-destructive/10 text-destructive",
-  }[tier];
+  if (tier === "abusive") {
+    return (
+      <Badge
+        variant="outline"
+        className="border-destructive/40 bg-destructive/10 text-destructive uppercase tracking-wider text-[10px]"
+      >
+        {tier}
+      </Badge>
+    );
+  }
   return (
     <Badge
-      variant="outline"
-      className={cn(
-        "uppercase tracking-wider text-[10px]",
-        className
-      )}
+      variant={tier === "trusted" ? "secondary" : "outline"}
+      className="uppercase tracking-wider text-[10px]"
     >
       {tier}
     </Badge>
