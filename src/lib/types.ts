@@ -46,3 +46,16 @@ export interface WalletPriceQuote extends PriceQuote {
   walletStakeSats: number | null;
   finalPriceSats: number; // basePriceSats × surge × walletMultiplier — what we charge
 }
+
+// One settled L402 payment. Recorded best-effort after a paid request returns
+// 200 so the dashboard can stream the live ledger.
+export interface PaymentEvent {
+  wallet: string | null;
+  endpoint: string; // e.g. "/api/data" — the route that settled
+  sats: number; // finalPriceSats charged for this request
+  multiplier: number; // surge × walletMultiplier (rounded for display)
+  walletMultiplier: number; // 0.5 / 1 / 2 / 10
+  load: LoadBand;
+  tier: Tier | null; // wallet's tier at settlement, null if anonymous
+  at: string; // ISO 8601
+}

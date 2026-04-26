@@ -33,7 +33,11 @@ export function TotalStakedCounter({
     <StatCard
       label="total staked"
       value={`${SAT_FMT.format(totalStakedSats)} sat${totalStakedSats === 1 ? "" : "s"}`}
-      caption={`across ${walletCount} wallet${walletCount === 1 ? "" : "s"}`}
+      caption={
+        walletCount === 0
+          ? "no stakers yet · awaiting first deposit"
+          : `across ${walletCount} wallet${walletCount === 1 ? "" : "s"}`
+      }
     />
   );
 }

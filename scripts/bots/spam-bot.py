@@ -31,6 +31,10 @@ ITERATIONS = int(os.environ.get("ACRUX_BOT_ITERATIONS", "12"))
 STAKE_SATS = int(os.environ.get("ACRUX_BOT_STAKE", "5000"))
 SCORE_STEP = int(os.environ.get("ACRUX_BOT_SCORE_STEP", "-10"))
 DELAY_SECONDS = float(os.environ.get("ACRUX_BOT_DELAY", "0.4"))
+# Tight ceiling on the paywall-gated call so a hung MDK checkout (e.g. while the
+# merchant domain is still propagating) doesn't stall the bot. Score/slash work
+# entirely through admin endpoints, so the demo arc is unaffected.
+SEARCH_TIMEOUT_S = float(os.environ.get("ACRUX_BOT_SEARCH_TIMEOUT", "1.5"))
 FLOOR = -100
 
 
@@ -54,9 +58,19 @@ def deposit(sats: int) -> dict[str, Any]:
     return r.json()
 
 
-def hammer(query: str) -> int:
-    r = post_json("/api/search", {"q": query}, headers={"X-Acrux-Wallet": WALLET})
-    return r.status_code
+def hammer(query: str) -> str:
+    try:
+        r = requests.post(
+            f"{BASE}/api/search",
+            json={"q": query},
+            headers={"X-Acrux-Wallet": WALLET},
+            timeout=SEARCH_TIMEOUT_S,
+        )
+        return str(r.status_code)
+    except requests.Timeout:
+        return "timeout"
+    except requests.RequestException:
+        return "neterr"
 
 
 def admin_score(delta: int, reason: str) -> dict[str, Any]:
@@ -109,7 +123,7 @@ def main() -> None:
         score = state.get("score")
         tier = state.get("tier")
         print(
-            f"[{i + 1:02d}] /api/search {status} q={q:<10} "
+            f"[{i + 1:02d}] /api/search {status:<7} q={q:<10} "
             f"→ score={score} tier={tier} stake={state.get('stakeSats')}"
         )
         if not floored and score is not None and score <= FLOOR and state.get("stakeSats", 0) > 0:
