@@ -186,13 +186,21 @@ export async function listRecentSlashes(
 ): Promise<SlashEvent[]> {
   const redis = getRedis();
   const items = await redis.lrange(K_SLASHLOG, 0, limit - 1);
+  // Upstash's REST client auto-parses any value whose string body is valid
+  // JSON — so an item we LPUSH'd as JSON.stringify(event) comes back already
+  // shaped as the object. We tolerate both shapes here so the reader stays
+  // correct against any Upstash SDK version.
   return items
-    .map((s) => {
-      try {
-        return JSON.parse(s as string) as SlashEvent;
-      } catch {
-        return null;
+    .map((it) => {
+      if (it && typeof it === "object") return it as SlashEvent;
+      if (typeof it === "string") {
+        try {
+          return JSON.parse(it) as SlashEvent;
+        } catch {
+          return null;
+        }
       }
+      return null;
     })
     .filter((e): e is SlashEvent => e !== null);
 }
