@@ -1,4 +1,9 @@
 import Link from "next/link";
+import { ArrowUpRight, Zap } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 const PRIMITIVES = [
   {
@@ -20,31 +25,40 @@ const PRIMITIVES = [
 
 const STATUS = [
   { hour: "0–3", label: "L402 paywall live at /api/ping", done: true },
-  { hour: "3–6", label: "Surge engine + free /api/price quote", done: false },
-  { hour: "6–10", label: "Reputation staking with slashing", done: false },
-  { hour: "10–13", label: "Per-wallet pricing layer", done: false },
-  { hour: "13–17", label: "Dashboard + dueling-bots demo", done: false },
+  { hour: "3–6", label: "Surge engine + free /api/price quote", done: true },
+  { hour: "6–10", label: "Reputation staking with slashing", done: true },
+  { hour: "10–13", label: "Per-wallet pricing layer", done: true },
+  { hour: "13–17", label: "Dashboard + dueling-bots demo", done: true },
 ] as const;
 
 export default function Home() {
   return (
     <div className="min-h-screen px-6 py-16 sm:py-24">
-      <main className="mx-auto w-full max-w-3xl space-y-16">
-        <header className="space-y-4">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[color:var(--color-accent)]">
-            <span aria-hidden>⚡</span>
-            <span>acrux</span>
-            <span className="text-[color:var(--color-subtle)]">·</span>
-            <span className="text-[color:var(--color-subtle)]">
-              hacknation challenge 02
-            </span>
+      <main className="mx-auto flex w-full max-w-3xl flex-col gap-16">
+        <header className="flex flex-col gap-5">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[color:var(--color-lightning)]">
+              <Zap className="size-3" aria-hidden />
+              <span>acrux</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground">
+                hacknation challenge 02
+              </span>
+            </div>
+            <Link
+              href="/dashboard"
+              className="group inline-flex items-center gap-1.5 rounded-md border border-border bg-card/40 px-2.5 py-1 font-mono text-xs text-foreground transition-colors hover:bg-card"
+            >
+              dashboard
+              <ArrowUpRight className="size-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
           </div>
 
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Economic immune system for the agent economy.
           </h1>
 
-          <p className="max-w-2xl text-base leading-relaxed text-[color:var(--color-muted)]">
+          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
             Acrux is a drop-in Lightning Network middleware that auto-prices
             attackers out, pays honest agents back, and settles every
             transaction in milliseconds. No signups, no API keys, no
@@ -54,100 +68,116 @@ export default function Home() {
 
         <section className="grid gap-3 sm:grid-cols-3">
           {PRIMITIVES.map((p) => (
-            <article
+            <Card
               key={p.label}
-              className="rounded-lg border border-[color:var(--color-border)] bg-white/[0.02] p-5 transition-colors hover:bg-white/[0.04]"
+              className="transition-colors hover:bg-card/80"
+              size="sm"
             >
-              <div className="mb-3 flex items-center gap-2 font-mono text-xs">
-                <span className="rounded bg-[color:var(--color-accent-soft)] px-1.5 py-0.5 text-[color:var(--color-accent)]">
-                  {p.label}
-                </span>
-                <span className="text-[color:var(--color-subtle)] uppercase tracking-wider">
-                  primitive
-                </span>
-              </div>
-              <h3 className="mb-2 text-sm font-semibold tracking-tight">
-                {p.title}
-              </h3>
-              <p className="text-sm leading-relaxed text-[color:var(--color-muted)]">
-                {p.body}
-              </p>
-            </article>
+              <CardHeader>
+                <div className="flex items-center gap-2 font-mono text-xs">
+                  <Badge
+                    variant="outline"
+                    className="border-[color:var(--color-lightning)]/40 bg-[color:var(--color-lightning-soft)] text-[color:var(--color-lightning)]"
+                  >
+                    {p.label}
+                  </Badge>
+                  <span className="uppercase tracking-wider text-muted-foreground">
+                    primitive
+                  </span>
+                </div>
+                <CardTitle className="text-sm font-semibold tracking-tight">
+                  {p.title}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm leading-relaxed text-muted-foreground">
+                  {p.body}
+                </p>
+              </CardContent>
+            </Card>
           ))}
         </section>
 
-        <section className="rounded-lg border border-[color:var(--color-border)] p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="font-mono text-xs uppercase tracking-wider text-[color:var(--color-subtle)]">
-              build status
+        <Card size="sm">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <CardTitle className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+                build status
+              </CardTitle>
+              <span className="font-mono text-xs text-muted-foreground">
+                signet (mutinynet) · mainnet swap @ H21
+              </span>
             </div>
-            <div className="font-mono text-xs text-[color:var(--color-subtle)]">
-              signet (mutinynet) · mainnet swap @ H21
-            </div>
-          </div>
-          <ul className="space-y-1.5 font-mono text-sm">
-            {STATUS.map((s) => (
-              <li key={s.hour} className="flex items-baseline gap-3">
-                <span className="w-14 shrink-0 text-[color:var(--color-subtle)]">
-                  H{s.hour}
-                </span>
-                <span
-                  aria-hidden
-                  className={
-                    s.done
-                      ? "text-[color:var(--color-accent)]"
-                      : "text-[color:var(--color-subtle)]"
-                  }
-                >
-                  {s.done ? "▸" : "○"}
-                </span>
-                <span
-                  className={
-                    s.done
-                      ? "text-[color:var(--color-foreground)]"
-                      : "text-[color:var(--color-muted)]"
-                  }
-                >
-                  {s.label}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
+          </CardHeader>
+          <CardContent>
+            <ul className="flex flex-col gap-1.5 font-mono text-sm">
+              {STATUS.map((s) => (
+                <li key={s.hour} className="flex items-baseline gap-3">
+                  <span className="w-14 shrink-0 text-muted-foreground">
+                    H{s.hour}
+                  </span>
+                  <span
+                    aria-hidden
+                    className={
+                      s.done
+                        ? "text-[color:var(--color-lightning)]"
+                        : "text-muted-foreground"
+                    }
+                  >
+                    {s.done ? "▸" : "○"}
+                  </span>
+                  <span
+                    className={
+                      s.done ? "text-foreground" : "text-muted-foreground"
+                    }
+                  >
+                    {s.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
 
-        <section className="space-y-3">
-          <h2 className="font-mono text-xs uppercase tracking-wider text-[color:var(--color-subtle)]">
+        <section className="flex flex-col gap-3">
+          <h2 className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
             try it
           </h2>
-          <div className="space-y-2 rounded-lg border border-[color:var(--color-border)] bg-black/40 p-4 font-mono text-xs leading-relaxed">
-            <div className="text-[color:var(--color-subtle)]"># Free price quote — read the live surge multiplier</div>
-            <div>
-              <span className="text-[color:var(--color-accent)]">$</span> curl
-              localhost:3000/api/price
-            </div>
-            <div className="pt-2 text-[color:var(--color-subtle)]"># Paywalled ping — returns 402 + Lightning invoice on first hit</div>
-            <div>
-              <span className="text-[color:var(--color-accent)]">$</span> curl
-              -i localhost:3000/api/ping
-            </div>
-          </div>
+          <Card size="sm" className="bg-black/40">
+            <CardContent className="flex flex-col gap-2 font-mono text-xs leading-relaxed">
+              <div className="text-muted-foreground">
+                # Free price quote — read the live surge multiplier
+              </div>
+              <div>
+                <span className="text-[color:var(--color-lightning)]">$</span>{" "}
+                curl localhost:3000/api/price
+              </div>
+              <div className="pt-2 text-muted-foreground">
+                # Paywalled ping — returns 402 + Lightning invoice on first hit
+              </div>
+              <div>
+                <span className="text-[color:var(--color-lightning)]">$</span>{" "}
+                curl -i localhost:3000/api/ping
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--color-border)] pt-6 font-mono text-xs text-[color:var(--color-subtle)]">
-          <div>acrux · signet (mutinynet) · mainnet swap @ H21</div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/api/price"
-              className="hover:text-[color:var(--color-foreground)]"
-            >
-              /api/price
-            </Link>
-            <Link
-              href="/api/ping"
-              className="hover:text-[color:var(--color-foreground)]"
-            >
-              /api/ping
-            </Link>
+        <footer className="flex flex-col gap-4">
+          <Separator />
+          <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-xs text-muted-foreground">
+            <div>acrux · signet (mutinynet) · mainnet swap @ H21</div>
+            <div className="flex items-center gap-4">
+              <Link href="/api/price" className="hover:text-foreground">
+                /api/price
+              </Link>
+              <Link href="/api/ping" className="hover:text-foreground">
+                /api/ping
+              </Link>
+              <Link href="/dashboard" className="hover:text-foreground">
+                /dashboard
+              </Link>
+            </div>
           </div>
         </footer>
       </main>
