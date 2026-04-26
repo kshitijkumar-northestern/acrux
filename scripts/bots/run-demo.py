@@ -22,12 +22,12 @@ Requirements:
     ACRUX_ADMIN_TOKEN=<same token that's in .env.local>
 
 Tunables (env):
-    HONEST_ITERATIONS   default 30
-    HONEST_DELAY        default 0.6
-    SPAM_ITERATIONS     default 14
+    HONEST_ITERATIONS   default 55    enough at +1/iter to cross trusted (+50)
+    HONEST_DELAY        default 0.4
+    SPAM_ITERATIONS     default 14    enough at -10/iter to floor at -100
     SPAM_DELAY          default 0.3
     SPAM_OFFSET_S       default 4.0   delay before spam-bot starts
-    SKIP_DISTRIBUTE     default unset  set to skip the post-bot distribute call
+    SKIP_DISTRIBUTE     default unset set to skip the post-bot distribute call
 """
 
 from __future__ import annotations
@@ -43,8 +43,8 @@ import requests
 BASE = os.environ.get("ACRUX_BASE_URL", "http://localhost:3000").rstrip("/")
 ADMIN = os.environ.get("ACRUX_ADMIN_TOKEN", "")
 
-HONEST_ITERATIONS = int(os.environ.get("HONEST_ITERATIONS", "30"))
-HONEST_DELAY = float(os.environ.get("HONEST_DELAY", "0.6"))
+HONEST_ITERATIONS = int(os.environ.get("HONEST_ITERATIONS", "55"))
+HONEST_DELAY = float(os.environ.get("HONEST_DELAY", "0.4"))
 SPAM_ITERATIONS = int(os.environ.get("SPAM_ITERATIONS", "14"))
 SPAM_DELAY = float(os.environ.get("SPAM_DELAY", "0.3"))
 SPAM_OFFSET_S = float(os.environ.get("SPAM_OFFSET_S", "4.0"))

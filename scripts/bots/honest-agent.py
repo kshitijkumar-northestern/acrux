@@ -23,6 +23,12 @@ WALLET = os.environ.get("ACRUX_WALLET", f"honest_{int(time.time())}")
 ITERATIONS = int(os.environ.get("ACRUX_BOT_ITERATIONS", "60"))
 STAKE_SATS = int(os.environ.get("ACRUX_BOT_STAKE", "10000"))
 DELAY_SECONDS = float(os.environ.get("ACRUX_BOT_DELAY", "1.0"))
+# /api/search goes through the L402 paywall, which depends on MDK reaching the
+# merchant webhook over the public domain. In local dev that webhook is often
+# unreachable, so we keep this timeout tight and tolerate any failure — the
+# story the bot tells comes from /api/stake/score, not from a successful
+# checkout.
+SEARCH_TIMEOUT_S = float(os.environ.get("ACRUX_BOT_SEARCH_TIMEOUT", "1.5"))
 
 QUERIES = [
     "bitcoin lightning network primer",
@@ -58,19 +64,25 @@ def deposit(sats: int) -> dict[str, Any]:
     return r.json()
 
 
-def search(query: str) -> int:
+def search(query: str) -> str:
     """Hit the real paid endpoint so the dashboard sees the request.
 
     The first response is the L402 402 invoice. We don't pay it from Python;
     the score credit below is what makes the wallet's reputation move.
-    Returns the HTTP status for visibility.
+    Returns the HTTP status (or a short failure tag) for visibility.
     """
-    r = post_json(
-        "/api/search",
-        {"q": query},
-        headers={"X-Acrux-Wallet": WALLET},
-    )
-    return r.status_code
+    try:
+        r = requests.post(
+            f"{BASE}/api/search",
+            json={"q": query},
+            headers={"X-Acrux-Wallet": WALLET},
+            timeout=SEARCH_TIMEOUT_S,
+        )
+        return str(r.status_code)
+    except requests.Timeout:
+        return "timeout"
+    except requests.RequestException:
+        return "neterr"
 
 
 def credit_score(delta: int, reason: str) -> dict[str, Any]:
@@ -112,7 +124,7 @@ def main() -> None:
         score = state.get("score")
         tier = state.get("tier")
         print(
-            f"[{i + 1:02d}] /api/search {status} q={q!r:<48} "
+            f"[{i + 1:02d}] /api/search {status:<7} q={q!r:<48} "
             f"→ score={score} tier={tier}"
         )
         if not crossed_trusted and tier == "trusted":
