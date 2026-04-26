@@ -2,7 +2,7 @@
   "name": "acrux",
   "version": "0.1.0",
   "private": true,
-  "description": "Acrux \u2014 economic immune system for the agent economy. Per-load surge pricing, per-wallet attacker pricing, and reputation staking with slashing, all settled on Lightning.",
+  "description": "Acrux — economic immune system for the agent economy. Per-load surge pricing, per-wallet attacker pricing, and reputation staking with slashing, all settled on Lightning.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -15,7 +15,8 @@
     "@upstash/redis": "^1.34.4",
     "next": "16.2.4",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
