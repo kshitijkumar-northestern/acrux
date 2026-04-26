@@ -1,7 +1,5 @@
 "use client";
 
-import { Zap } from "lucide-react";
-
 import {
   PoolCounter,
   TotalStakedCounter,
@@ -12,7 +10,6 @@ import { SlashLog } from "@/components/dashboard/slash-log";
 import { TopStakers } from "@/components/dashboard/top-stakers";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useDashboard, type DashboardSnapshot } from "@/lib/use-dashboard";
@@ -21,17 +18,15 @@ export default function DashboardPage() {
   const { data, error, status, lastUpdated } = useDashboard(1000);
 
   return (
-    <div className="min-h-screen px-6 py-10 sm:py-14">
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-8">
-        <DashboardHeader status={status} lastUpdated={lastUpdated} />
-        {error ? (
-          <ErrorPanel error={error} />
-        ) : !data ? (
-          <LoadingPanel />
-        ) : (
-          <Tiles data={data} />
-        )}
-      </main>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12 sm:py-16">
+      <DashboardHeader status={status} lastUpdated={lastUpdated} />
+      {error ? (
+        <ErrorPanel error={error} />
+      ) : !data ? (
+        <LoadingPanel />
+      ) : (
+        <Tiles data={data} />
+      )}
     </div>
   );
 }
@@ -44,18 +39,21 @@ function DashboardHeader({
   lastUpdated: number | null;
 }) {
   return (
-    <header className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[color:var(--color-lightning)]">
-          <Zap className="size-3" aria-hidden />
-          <span>acrux</span>
-          <span className="text-muted-foreground">·</span>
-          <span className="text-muted-foreground">dashboard</span>
-        </div>
-        <StatusPill status={status} lastUpdated={lastUpdated} />
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-1">
+        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+          Live metrics
+        </span>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          The economic immune system, live.
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          1Hz poll of <code className="rounded bg-card px-1 py-0.5 text-[11px]">/api/dashboard</code>.
+          All numbers are live Redis state.
+        </p>
       </div>
-      <Separator />
-    </header>
+      <StatusPill status={status} lastUpdated={lastUpdated} />
+    </div>
   );
 }
 
@@ -97,11 +95,12 @@ function StatusPill({
       : "—";
 
   return (
-    <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
+    <div className="flex shrink-0 items-center gap-3 rounded-md border border-border bg-card/40 px-3 py-1.5 font-mono text-xs text-muted-foreground">
       <span className="flex items-center gap-1.5">
         <span aria-hidden className={dotClass} />
         <span className={labelClass}>{label}</span>
       </span>
+      <span className="text-muted-foreground/60">·</span>
       <span>updated {ts}</span>
     </div>
   );
