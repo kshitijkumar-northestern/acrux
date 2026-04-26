@@ -1,6 +1,7 @@
 import { withPayment } from "@moneydevkit/nextjs/server";
 import { currentPriceForWallet, recordRequest } from "@/lib/pricing";
-import { bumpScore } from "@/lib/reputation";
+import { bumpScore, getWallet, slash } from "@/lib/reputation";
+import { SCORE_AUTO_SLASH, type SlashEvent } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,9 +31,24 @@ const handler = async (req: Request) => {
 
   // Reward the paid request. Anonymous callers (no X-Acrux-Wallet) skip the
   // ledger write entirely so we never invent a synthetic identity.
-  const postState = wallet
+  let postState = wallet
     ? await bumpScore(wallet, 1, "paid_request")
     : null;
+
+  // Auto-slash at the floor: 100% of stake → pool, then re-read state so the
+  // response reflects the post-slash balance. Skip if there's no stake to
+  // take so the call stays idempotent on already-slashed wallets.
+  let slashEvent: SlashEvent | null = null;
+  if (
+    wallet &&
+    postState &&
+    postState.score <= SCORE_AUTO_SLASH &&
+    postState.stakeSats > 0
+  ) {
+    const result = await slash(wallet, 1, "auto_floor_slash");
+    slashEvent = result.event;
+    postState = await getWallet(wallet);
+  }
 
   return Response.json(
     {
@@ -55,6 +71,7 @@ const handler = async (req: Request) => {
             stakeSats: postState?.stakeSats ?? price.walletStakeSats,
           }
         : null,
+      slash: slashEvent,
       payload: {
         headline:
           "The agent economy is forming. Acrux is its immune system.",
