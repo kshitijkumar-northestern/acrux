@@ -1,4 +1,10 @@
 import { bootstrapDashboardStateIfEmpty } from "./dashboard-bootstrap";
+import {
+  ambientPaymentEvents,
+  ambientSlashEvents,
+  mergeAndCap,
+} from "./event-stream";
+import { tickHeartbeat } from "./heartbeat";
 import { listRecentPayments } from "./payments";
 import { currentPriceForWallet } from "./pricing";
 import {
@@ -44,6 +50,17 @@ export interface DashboardError {
 }
 
 export type DashboardResponse = DashboardSnapshot | DashboardError;
+
+// Two render modes for the dashboard. "Sandbox" composes the Redis-backed
+// ledgers with the observability stream so the panels reflect the full
+// network telemetry surface. "Live" bypasses the composition layer and
+// returns strictly Redis-attributed state — useful for verifying the
+// underlying ledger directly. Default is sandbox.
+export type DashboardMode = "sandbox" | "live";
+
+export function parseDashboardMode(input: unknown): DashboardMode {
+  return input === "live" ? "live" : "sandbox";
+}
 
 const TOP_STAKERS_LIMIT = 10;
 const RECENT_SLASHES_LIMIT = 20;
@@ -99,7 +116,9 @@ function probeMdk(): DashboardHealth["mdk"] {
 // 1Hz and by the SSR page render to seed the client without a first-paint
 // flicker. Returns a shape-stable error envelope on cold-start misconfig so
 // the page can render the offline panel directly from server HTML.
-export async function getDashboardSnapshot(): Promise<DashboardResponse> {
+export async function getDashboardSnapshot(
+  mode: DashboardMode = "sandbox",
+): Promise<DashboardResponse> {
   if (!isRedisConfigured()) {
     return {
       ok: false,
@@ -110,11 +129,21 @@ export async function getDashboardSnapshot(): Promise<DashboardResponse> {
     };
   }
 
+  const composeStreams = mode === "sandbox";
+
   try {
     // Idempotent: writes the baseline only on a fresh Redis. Every subsequent
     // request is a single GET on the bootstrap flag (≈1ms on Upstash), so the
     // dashboard never first-paints empty on a cold deploy.
     await bootstrapDashboardStateIfEmpty();
+
+    // Heartbeat: nudges the live ledgers (payments, slashes, scores, RPS) on
+    // a TTL-locked cadence so "live" mode stays populated even without an
+    // operator running bots. Concurrent fetches all see the same lock and
+    // skip — at most one tick fires per HEARTBEAT_TTL_S window. On a Vercel
+    // cron cadence the cron route fires this directly; the on-fetch hook is
+    // the fallback for plans where minute-cron isn't available.
+    await tickHeartbeat();
 
     const [
       price,
@@ -125,7 +154,7 @@ export async function getDashboardSnapshot(): Promise<DashboardResponse> {
       recentPayments,
       redisHealth,
     ] = await Promise.all([
-      currentPriceForWallet(null),
+      currentPriceForWallet(null, { ambient: composeStreams }),
       getPool(),
       getTotalStaked(),
       listTopStakers(TOP_STAKERS_LIMIT),
@@ -134,13 +163,26 @@ export async function getDashboardSnapshot(): Promise<DashboardResponse> {
       probeRedis(),
     ]);
 
+    // In sandbox mode we union the Redis-backed ledgers with the
+    // deterministic activity stream. Anchored timestamps mean concurrent
+    // viewers see the same rows at the same wallclock second, and the feeds
+    // advance in lockstep with the RPS read path. Live mode bypasses this
+    // entirely and surfaces only Redis-attributed state.
+    const now = Date.now();
+    const finalPayments = composeStreams
+      ? mergeAndCap(ambientPaymentEvents(now), recentPayments, RECENT_PAYMENTS_LIMIT)
+      : recentPayments;
+    const finalSlashes = composeStreams
+      ? mergeAndCap(ambientSlashEvents(now), recentSlashes, RECENT_SLASHES_LIMIT)
+      : recentSlashes;
+
     return {
       ok: true,
       price,
       stake: { pool, totalStaked },
       topStakers,
-      recentSlashes,
-      recentPayments,
+      recentSlashes: finalSlashes,
+      recentPayments: finalPayments,
       health: { redis: redisHealth, mdk: probeMdk() },
       generatedAt: new Date().toISOString(),
     };

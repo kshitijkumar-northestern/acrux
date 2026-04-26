@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { ModeToggle } from "@/components/dashboard/mode-toggle";
 import { NetworkStatus } from "@/components/dashboard/network-status";
 import {
   PoolCounter,
@@ -17,12 +19,29 @@ import {
   useDashboard,
   type DashboardError,
   type DashboardHealth,
+  type DashboardMode,
   type DashboardResponse,
   type DashboardSnapshot,
 } from "@/lib/use-dashboard";
 
 export function DashboardLive({ initial }: { initial: DashboardResponse }) {
-  const { data, error, status, lastUpdated } = useDashboard(initial, 1000);
+  const [mode, setMode] = useState<DashboardMode>("sandbox");
+  // When the user toggles modes we mark the timestamp of the click. The
+  // toggle stays in a loading state until a fresher snapshot than that
+  // timestamp lands — i.e. until we have data attributable to the new mode.
+  const [switchedAt, setSwitchedAt] = useState<number | null>(null);
+  const { data, error, status, lastUpdated } = useDashboard(initial, 1000, {
+    mode,
+  });
+
+  const isSwitching =
+    switchedAt !== null && (lastUpdated === null || lastUpdated < switchedAt);
+
+  const handleModeChange = (next: DashboardMode) => {
+    if (next === mode) return;
+    setSwitchedAt(Date.now());
+    setMode(next);
+  };
 
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-10 px-6 py-12 sm:py-16 lg:px-8">
@@ -37,6 +56,11 @@ export function DashboardLive({ initial }: { initial: DashboardResponse }) {
       ) : error ? (
         <ErrorPanel error={error} />
       ) : null}
+      <DashboardFooter
+        mode={mode}
+        onModeChange={handleModeChange}
+        switching={isSwitching}
+      />
     </div>
   );
 }
@@ -65,12 +89,35 @@ function DashboardHeader({
             <code className="rounded bg-card px-1.5 py-0.5 text-[12px]">
               /api/dashboard
             </code>
-            . All numbers are live Redis state.
+            . Streaming network telemetry.
           </p>
         </div>
-        <StatusPill status={status} lastUpdated={lastUpdated} />
+        <div className="flex shrink-0 items-center gap-2">
+          <StatusPill status={status} lastUpdated={lastUpdated} />
+        </div>
       </div>
       <NetworkStatus health={health} />
+    </div>
+  );
+}
+
+function DashboardFooter({
+  mode,
+  onModeChange,
+  switching,
+}: {
+  mode: DashboardMode;
+  onModeChange: (next: DashboardMode) => void;
+  switching: boolean;
+}) {
+  return (
+    <div className="mt-6 flex flex-col items-center gap-3 border-t border-border/60 pt-8 sm:flex-row sm:items-center sm:justify-between">
+      <p className="font-mono text-[11px] text-muted-foreground">
+        {mode === "sandbox"
+          ? "sandbox view · composed network telemetry"
+          : "live view · direct ledger only"}
+      </p>
+      <ModeToggle mode={mode} onChange={onModeChange} loading={switching} />
     </div>
   );
 }

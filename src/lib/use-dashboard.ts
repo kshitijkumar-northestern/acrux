@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type {
   DashboardError,
   DashboardHealth,
+  DashboardMode,
   DashboardResponse,
   DashboardSnapshot,
 } from "./dashboard-snapshot";
@@ -11,6 +12,7 @@ import type {
 export type {
   DashboardError,
   DashboardHealth,
+  DashboardMode,
   DashboardResponse,
   DashboardSnapshot,
 };
@@ -33,10 +35,19 @@ const STUCK_ERRORS = new Set([
   "dashboard_failed",
 ]);
 
+export interface UseDashboardOptions {
+  // Controls the dashboard render mode forwarded to /api/dashboard. Defaults
+  // to "sandbox" — the composed view with the observability stream union'd
+  // into the panels. "live" surfaces strictly Redis-attributed state.
+  mode?: DashboardMode;
+}
+
 export function useDashboard(
   initial: DashboardResponse | null = null,
   intervalMs: number = DEFAULT_INTERVAL_MS,
+  opts?: UseDashboardOptions,
 ): UseDashboardResult {
+  const mode: DashboardMode = opts?.mode ?? "sandbox";
   const initialData = initial && initial.ok ? initial : null;
   const initialError = initial && !initial.ok ? initial : null;
   const initialStatus: UseDashboardResult["status"] = initialData
@@ -57,6 +68,11 @@ export function useDashboard(
   // Latest values mirrored as refs so the polling closure can compare against
   // them without re-running the effect on every state change.
   const errorRef = useRef<DashboardError | null>(initialError);
+  // Track whether this is the initial mount. On first mount we honour the
+  // SSR-seeded snapshot and wait `intervalMs` for the first refetch. On any
+  // subsequent re-run (e.g. mode toggle), we fire an immediate fetch so the
+  // UI reflects the new endpoint as fast as possible.
+  const firstRunRef = useRef(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,7 +110,11 @@ export function useDashboard(
       setStatus((s) => (s === "idle" ? "loading" : s));
 
       try {
-        const res = await fetch("/api/dashboard", { cache: "no-store" });
+        const url =
+          mode === "live"
+            ? "/api/dashboard?mode=live"
+            : "/api/dashboard";
+        const res = await fetch(url, { cache: "no-store" });
         const text = await res.text();
         let json: DashboardResponse;
         try {
@@ -137,22 +157,27 @@ export function useDashboard(
       }
     };
 
-    // If we already have an SSR-seeded snapshot, skip the immediate refetch
-    // and just start the cadence. Otherwise tick right away to cover the
-    // pure-client path (e.g. tests, storybook).
-    if (initial) {
+    // First mount with an SSR-seeded snapshot: skip the immediate refetch
+    // and just start the cadence. On any subsequent effect re-run (mode
+    // toggle), fire immediately so the UI reflects the new endpoint without
+    // waiting a full polling interval. Pure-client mounts (no `initial`)
+    // also fetch right away.
+    if (initial && firstRunRef.current) {
       schedule(intervalMs);
     } else {
       void tick();
     }
+    firstRunRef.current = false;
 
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-    // `initial` is consumed once at mount; `intervalMs` is the only knob.
+    // `initial` is consumed once at mount; the cadence and mode are the
+    // only live knobs. Switching `mode` cancels the current loop and starts
+    // a fresh one against the new endpoint.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [intervalMs]);
+  }, [intervalMs, mode]);
 
   return { data, error, status, lastUpdated };
 }
