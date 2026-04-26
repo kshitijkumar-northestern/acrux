@@ -3,6 +3,8 @@
 import { PoolCounter, TotalStakedCounter } from "@/components/dashboard/pool-counter";
 import { PriceTicker } from "@/components/dashboard/price-ticker";
 import { RpsSparkline } from "@/components/dashboard/rps-sparkline";
+import { SlashLog } from "@/components/dashboard/slash-log";
+import { TopStakers } from "@/components/dashboard/top-stakers";
 import { useDashboard, type DashboardSnapshot } from "@/lib/use-dashboard";
 
 export default function DashboardPage() {
@@ -135,6 +137,10 @@ function Tiles({ data }: { data: DashboardSnapshot }) {
         multiplier={data.price.multiplier}
         generatedAt={data.generatedAt}
       />
+      <section className="grid gap-4 lg:grid-cols-2">
+        <TopStakers stakers={data.topStakers} />
+        <SlashLog events={data.recentSlashes} />
+      </section>
     </>
   );
 }
