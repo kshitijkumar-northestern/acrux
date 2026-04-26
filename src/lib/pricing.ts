@@ -1,8 +1,8 @@
 import { getRedis } from "./redis";
-import { walletMultiplier } from "./reputation";
-import type { LoadBand, PriceQuote } from "./types";
+import { getWallet, walletMultiplier } from "./reputation";
+import type { LoadBand, PriceQuote, WalletPriceQuote } from "./types";
 
-export type { LoadBand, PriceQuote };
+export type { LoadBand, PriceQuote, WalletPriceQuote };
 
 const RPS_KEY = "acrux:rps:requests";
 const RPS_WINDOW_MS = 1_000;
@@ -104,6 +104,34 @@ export async function currentPrice(): Promise<PriceQuote> {
     load: loadBand(rps),
     maxMultiplier: MAX_MULTIPLIER,
     quotedAt: new Date().toISOString(),
+  };
+}
+
+// Per-wallet quote. Anonymous callers (wallet = null) collapse to base × surge.
+// Reads reputation through getWallet so the locked Redis layout stays exclusive
+// to reputation.ts — pricing never touches acrux:stake:* keys directly.
+export async function currentPriceForWallet(
+  wallet: string | null,
+): Promise<WalletPriceQuote> {
+  const base = await currentPrice();
+  const state = wallet ? await getWallet(wallet) : null;
+
+  const walletScore = state ? state.score : null;
+  const walletMul = walletMultiplierForScore(walletScore);
+  const finalPriceSats = composeFinalPriceSats(
+    BASE_PRICE_SATS,
+    surgeMultiplier(base.rps),
+    walletMul,
+  );
+
+  return {
+    ...base,
+    wallet: wallet ?? null,
+    walletScore,
+    walletTier: state ? state.tier : null,
+    walletMultiplier: walletMul,
+    walletStakeSats: state ? state.stakeSats : null,
+    finalPriceSats,
   };
 }
 
