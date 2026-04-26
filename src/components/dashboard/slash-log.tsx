@@ -15,21 +15,21 @@ export function SlashLog({ events }: { events: SlashEvent[] }) {
     <Card>
       <CardHeader>
         <div className="flex items-baseline justify-between gap-4">
-          <CardTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.18em] text-muted-foreground">
+          <CardTitle className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             slash log
           </CardTitle>
-          <CardDescription className="font-mono text-xs">
+          <CardDescription className="font-mono text-[12px]">
             last {events.length} event{events.length === 1 ? "" : "s"}
           </CardDescription>
         </div>
       </CardHeader>
       <CardContent>
         {events.length === 0 ? (
-          <p className="font-mono text-sm text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             no slashes yet — abusive wallets at score floor will land here
           </p>
         ) : (
-          <ul className="flex flex-col gap-2 font-mono text-xs">
+          <ul className="flex flex-col gap-2 font-mono text-[12px]">
             {events.map((e, i) => (
               <li
                 key={`${e.wallet}-${e.at}-${i}`}

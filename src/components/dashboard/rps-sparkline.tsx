@@ -59,10 +59,10 @@ export function RpsSparkline({
     <Card>
       <CardHeader>
         <div className="flex items-baseline justify-between gap-4">
-          <CardTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.18em] text-muted-foreground">
+          <CardTitle className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             requests / second · last {BUFFER_SIZE}s
           </CardTitle>
-          <div className="flex items-baseline gap-3 font-mono text-xs text-muted-foreground">
+          <div className="flex items-baseline gap-3 font-mono text-[12px] text-muted-foreground">
             <span>
               load <span style={{ color: fill }}>{load}</span>
             </span>

@@ -32,7 +32,7 @@ const STATUS = [
 
 export default function Home() {
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 py-20 sm:py-28">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-24 px-6 py-20 sm:py-24 lg:gap-32 lg:px-8 lg:py-28">
       <Hero />
       <Primitives />
       <BuildStatus />
@@ -44,30 +44,30 @@ export default function Home() {
 function Hero() {
   return (
     <section className="flex flex-col gap-6">
-      <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+      <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
         Hacknation Challenge 02 · economic immune system
       </span>
-      <h1 className="max-w-3xl text-balance text-5xl font-semibold tracking-tight sm:text-6xl">
+      <h1 className="max-w-4xl text-balance text-5xl leading-[1.05] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
         Price attackers out.{" "}
         <span className="text-muted-foreground">Pay honest agents back.</span>
       </h1>
-      <p className="max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+      <p className="max-w-2xl text-[15px] leading-[1.6] text-muted-foreground sm:text-base">
         Acrux is a drop-in Lightning Network middleware. Per-load surge pricing,
         per-wallet attacker pricing, and reputation staking with slashing —
         every transaction settles in milliseconds. No signups, no API keys, no
         chargebacks.
       </p>
-      <div className="flex flex-wrap items-center gap-3 pt-2">
+      <div className="flex flex-wrap items-center gap-2 pt-2">
         <Link
           href="/dashboard"
-          className="group inline-flex items-center gap-1.5 rounded-md bg-foreground px-3.5 py-2 font-mono text-xs text-background transition-colors hover:bg-foreground/90"
+          className="group inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground px-3.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
         >
           Open dashboard
           <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
         <Link
           href="/api/price"
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 font-mono text-xs text-foreground transition-colors hover:bg-card/60"
+          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-transparent px-3.5 text-[13px] font-medium text-foreground transition-colors hover:bg-card"
         >
           curl /api/price
         </Link>
@@ -78,7 +78,7 @@ function Hero() {
 
 function Primitives() {
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-8">
       <SectionLabel
         eyebrow="Primitives"
         description="Three things Acrux does that nothing else can."
@@ -87,27 +87,27 @@ function Primitives() {
         {PRIMITIVES.map((p) => (
           <Card
             key={p.label}
-            className="transition-colors hover:bg-card/60"
+            className="transition-colors hover:border-foreground/20"
             size="sm"
           >
             <CardHeader>
-              <div className="flex items-center gap-2 font-mono text-xs">
+              <div className="flex items-center gap-2">
                 <Badge
                   variant="outline"
                   className="border-[color:var(--color-lightning)]/40 bg-[color:var(--color-lightning-soft)] text-[color:var(--color-lightning)]"
                 >
                   {p.label}
                 </Badge>
-                <span className="uppercase tracking-wider text-muted-foreground">
+                <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   primitive
                 </span>
               </div>
-              <CardTitle className="text-sm font-semibold tracking-tight">
+              <CardTitle className="text-[15px] font-semibold tracking-tight">
                 {p.title}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed text-muted-foreground">
+              <p className="text-[13px] leading-[1.6] text-muted-foreground">
                 {p.body}
               </p>
             </CardContent>
@@ -120,17 +120,17 @@ function Primitives() {
 
 function BuildStatus() {
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-8">
       <SectionLabel
         eyebrow="Build status"
         description="signet (mutinynet) · mainnet swap @ H21"
       />
       <Card size="sm">
         <CardContent>
-          <ul className="flex flex-col gap-1.5 font-mono text-sm">
+          <ul className="flex flex-col gap-2 font-mono text-[13px]">
             {STATUS.map((s) => (
               <li key={s.hour} className="flex items-baseline gap-3">
-                <span className="w-14 shrink-0 text-muted-foreground">
+                <span className="w-12 shrink-0 text-muted-foreground">
                   H{s.hour}
                 </span>
                 <span
@@ -161,13 +161,13 @@ function BuildStatus() {
 
 function TryIt() {
   return (
-    <section className="flex flex-col gap-6">
+    <section className="flex flex-col gap-8">
       <SectionLabel
         eyebrow="Try it"
         description="Live on signet — copy-paste, no auth."
       />
       <Card size="sm" className="bg-black/40">
-        <CardContent className="flex flex-col gap-2 font-mono text-xs leading-relaxed">
+        <CardContent className="flex flex-col gap-2 font-mono text-[12px] leading-[1.6]">
           <div className="text-muted-foreground">
             # Free price quote — read the live surge multiplier
           </div>
@@ -196,11 +196,13 @@ function SectionLabel({
   description: string;
 }) {
   return (
-    <div className="flex flex-col gap-1">
-      <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
         {eyebrow}
       </span>
-      <p className="text-sm text-muted-foreground">{description}</p>
+      <p className="text-[13px] leading-[1.6] text-muted-foreground">
+        {description}
+      </p>
     </div>
   );
 }

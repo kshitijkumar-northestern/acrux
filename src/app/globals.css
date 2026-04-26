@@ -52,38 +52,39 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Geist Design System tokens — dark only, exact Vercel.com values. */
 :root {
-  --background: oklch(0 0 0);
-  --foreground: oklch(0.94 0 0);
-  --card: oklch(0.16 0 0);
+  --background: oklch(0 0 0);                /* #000      */
+  --foreground: oklch(0.94 0 0);             /* #ededed   */
+  --card: oklch(0.04 0 0);                   /* #0a0a0a   */
   --card-foreground: oklch(0.94 0 0);
-  --popover: oklch(0.16 0 0);
+  --popover: oklch(0.04 0 0);
   --popover-foreground: oklch(0.94 0 0);
   --primary: oklch(0.94 0 0);
-  --primary-foreground: oklch(0.18 0 0);
-  --secondary: oklch(0.22 0 0);
+  --primary-foreground: oklch(0.04 0 0);
+  --secondary: oklch(0.16 0 0);              /* gray-100  */
   --secondary-foreground: oklch(0.94 0 0);
-  --muted: oklch(0.18 0 0);
-  --muted-foreground: oklch(0.62 0 0);
-  --accent: oklch(0.22 0 0);
+  --muted: oklch(0.16 0 0);
+  --muted-foreground: oklch(0.62 0 0);       /* gray-500 #888 */
+  --accent: oklch(0.16 0 0);
   --accent-foreground: oklch(0.94 0 0);
   --destructive: oklch(0.62 0.21 25);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
+  --border: oklch(1 0 0 / 13%);              /* alpha-200 */
+  --input: oklch(1 0 0 / 13%);
   --ring: oklch(0.55 0 0);
   --chart-1: oklch(0.78 0.15 70);
   --chart-2: oklch(0.6 0 0);
   --chart-3: oklch(0.45 0 0);
   --chart-4: oklch(0.35 0 0);
   --chart-5: oklch(0.25 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.16 0 0);
+  --radius: 0.5rem;                          /* 8px       */
+  --sidebar: oklch(0.04 0 0);
   --sidebar-foreground: oklch(0.94 0 0);
   --sidebar-primary: oklch(0.94 0 0);
-  --sidebar-primary-foreground: oklch(0.18 0 0);
-  --sidebar-accent: oklch(0.22 0 0);
+  --sidebar-primary-foreground: oklch(0.04 0 0);
+  --sidebar-accent: oklch(0.16 0 0);
   --sidebar-accent-foreground: oklch(0.94 0 0);
-  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-border: oklch(1 0 0 / 13%);
   --sidebar-ring: oklch(0.55 0 0);
 
   --lightning: #f7931a;
@@ -94,14 +95,37 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
   html,
   body {
     @apply bg-background text-foreground;
   }
   body {
     font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+    font-size: 14px;                         /* Geist body */
+    line-height: 1.5715;
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1, "cv11" 1;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-sans), system-ui, sans-serif;
+    letter-spacing: -0.04em;                 /* Geist display */
+    font-weight: 600;
+  }
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-feature-settings: "ss01" 1, "cv11" 1;
   }
   ::selection {
     background: var(--lightning);
