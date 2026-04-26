@@ -24,21 +24,21 @@ export function TopStakers({ stakers }: { stakers: WalletState[] }) {
     <Card>
       <CardHeader>
         <div className="flex items-baseline justify-between gap-4">
-          <CardTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.18em] text-muted-foreground">
+          <CardTitle className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
             top stakers
           </CardTitle>
-          <CardDescription className="font-mono text-xs">
+          <CardDescription className="font-mono text-[12px]">
             {stakers.length} wallet{stakers.length === 1 ? "" : "s"}
           </CardDescription>
         </div>
       </CardHeader>
       <CardContent>
         {stakers.length === 0 ? (
-          <p className="font-mono text-sm text-muted-foreground">
+          <p className="text-[13px] text-muted-foreground">
             no stakers yet — first POST /api/stake/deposit appears here
           </p>
         ) : (
-          <Table className="font-mono text-xs">
+          <Table className="font-mono text-[12px]">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8">#</TableHead>

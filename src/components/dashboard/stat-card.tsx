@@ -21,14 +21,14 @@ export function StatCard({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="font-mono text-[11px] font-normal uppercase tracking-[0.18em] text-muted-foreground">
+        <CardTitle className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           {label}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-2">
         <div
           className={cn(
-            "font-mono text-3xl font-semibold tabular-nums tracking-tight",
+            "font-sans text-3xl font-semibold tabular-nums tracking-[-0.03em]",
             tone === "danger"
               ? "text-destructive"
               : accent
@@ -39,7 +39,7 @@ export function StatCard({
           {value}
         </div>
         {caption ? (
-          <div className="font-mono text-xs text-muted-foreground">
+          <div className="text-[12px] leading-[1.5] text-muted-foreground">
             {caption}
           </div>
         ) : null}

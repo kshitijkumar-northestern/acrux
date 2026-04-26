@@ -18,7 +18,7 @@ export default function DashboardPage() {
   const { data, error, status, lastUpdated } = useDashboard(1000);
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-6 py-12 sm:py-16">
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-10 px-6 py-12 sm:py-16 lg:px-8">
       <DashboardHeader status={status} lastUpdated={lastUpdated} />
       {error ? (
         <ErrorPanel error={error} />
@@ -39,17 +39,20 @@ function DashboardHeader({
   lastUpdated: number | null;
 }) {
   return (
-    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-      <div className="flex flex-col gap-1">
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex flex-col gap-2">
+        <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           Live metrics
         </span>
-        <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+        <h1 className="text-3xl leading-[1.1] tracking-[-0.03em] sm:text-4xl">
           The economic immune system, live.
         </h1>
-        <p className="text-sm text-muted-foreground">
-          1Hz poll of <code className="rounded bg-card px-1 py-0.5 text-[11px]">/api/dashboard</code>.
-          All numbers are live Redis state.
+        <p className="text-[13px] leading-[1.6] text-muted-foreground">
+          1Hz poll of{" "}
+          <code className="rounded bg-card px-1.5 py-0.5 text-[12px]">
+            /api/dashboard
+          </code>
+          . All numbers are live Redis state.
         </p>
       </div>
       <StatusPill status={status} lastUpdated={lastUpdated} />
@@ -79,7 +82,6 @@ function StatusPill({
     status !== "live" && status !== "error" && "bg-muted-foreground"
   );
   const labelClass = cn(
-    "font-mono",
     status === "live" && "text-[color:var(--color-lightning)]",
     status === "error" && "text-destructive",
     status !== "live" && status !== "error" && "text-muted-foreground"
@@ -95,7 +97,7 @@ function StatusPill({
       : "—";
 
   return (
-    <div className="flex shrink-0 items-center gap-3 rounded-md border border-border bg-card/40 px-3 py-1.5 font-mono text-xs text-muted-foreground">
+    <div className="flex shrink-0 items-center gap-2.5 rounded-md border border-border bg-card/40 px-3 py-1.5 font-mono text-[12px] text-muted-foreground">
       <span className="flex items-center gap-1.5">
         <span aria-hidden className={dotClass} />
         <span className={labelClass}>{label}</span>
