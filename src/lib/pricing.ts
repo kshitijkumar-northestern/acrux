@@ -5,6 +5,7 @@ import type { LoadBand, PriceQuote, WalletPriceQuote } from "./types";
 export type { LoadBand, PriceQuote, WalletPriceQuote };
 
 const RPS_KEY = "acrux:rps:requests";
+const WALLET_RPS_KEY = (wallet: string) => `acrux:rps:wallet:${wallet}`;
 const RPS_WINDOW_MS = 1_000;
 const RPS_TRIM_MS = 5_000;
 
@@ -37,6 +38,31 @@ export async function currentRps(): Promise<number> {
   const redis = getRedis();
   const now = Date.now();
   const count = await redis.zcount(RPS_KEY, now - RPS_WINDOW_MS, now);
+  return Number(count) || 0;
+}
+
+// Per-wallet RPS sketch. Same shape as the global one, but keyed per wallet so
+// we can detect a single wallet flooding the shield even when global load is
+// otherwise quiet. Same trim policy keeps the structure bounded.
+export async function recordWalletRequest(wallet: string): Promise<void> {
+  const redis = getRedis();
+  const now = Date.now();
+  const member = `${now}:${Math.random().toString(36).slice(2, 10)}`;
+  const key = WALLET_RPS_KEY(wallet);
+  await Promise.all([
+    redis.zadd(key, { score: now, member }),
+    redis.zremrangebyscore(key, 0, now - RPS_TRIM_MS),
+  ]);
+}
+
+export async function currentWalletRps(wallet: string): Promise<number> {
+  const redis = getRedis();
+  const now = Date.now();
+  const count = await redis.zcount(
+    WALLET_RPS_KEY(wallet),
+    now - RPS_WINDOW_MS,
+    now,
+  );
   return Number(count) || 0;
 }
 

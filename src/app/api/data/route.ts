@@ -1,5 +1,10 @@
 import { withPayment } from "@moneydevkit/nextjs/server";
-import { currentPriceForWallet, recordRequest } from "@/lib/pricing";
+import {
+  currentPriceForWallet,
+  currentWalletRps,
+  recordRequest,
+  recordWalletRequest,
+} from "@/lib/pricing";
 import { bumpScore, getWallet, slash } from "@/lib/reputation";
 import { SCORE_AUTO_SLASH, type SlashEvent } from "@/lib/types";
 
@@ -7,6 +12,21 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const WALLET_HEADER = "x-acrux-wallet";
+
+// Per-wallet RPS abuse thresholds (env-overridable for live demo tuning).
+//   ABUSE_RPS    — sustained req/s from a single wallet that flips us into
+//                  decay mode. 5 covers normal bursty agents.
+//   ABUSE_DECAY  — score points removed per abusive request. -10 per call
+//                  reaches the SCORE_AUTO_SLASH floor (-100) in ~10 hits,
+//                  visible on the demo dashboard but not one-burst hostile.
+const ABUSE_RPS = Math.max(
+  1,
+  Number.parseInt(process.env.ACRUX_ABUSE_RPS ?? "5", 10) || 5,
+);
+const ABUSE_DECAY = Math.max(
+  1,
+  Number.parseInt(process.env.ACRUX_ABUSE_DECAY ?? "10", 10) || 10,
+);
 
 function readWallet(req: Request): string | null {
   const raw = req.headers.get(WALLET_HEADER);
@@ -16,10 +36,12 @@ function readWallet(req: Request): string | null {
 }
 
 // Each challenge issuance counts toward the load it influences, so attackers
-// spamming invoices raise the next attacker's price.
+// spamming invoices raise the next attacker's price. Both global and
+// per-wallet sketches are written so the abuse detector sees invoice spam too.
 const dynamicAmount = async (req: Request): Promise<number> => {
   await recordRequest();
   const wallet = readWallet(req);
+  if (wallet) await recordWalletRequest(wallet);
   const quote = await currentPriceForWallet(wallet);
   return quote.finalPriceSats;
 };
@@ -27,12 +49,23 @@ const dynamicAmount = async (req: Request): Promise<number> => {
 const handler = async (req: Request) => {
   await recordRequest();
   const wallet = readWallet(req);
+  if (wallet) await recordWalletRequest(wallet);
   const price = await currentPriceForWallet(wallet);
 
-  // Reward the paid request. Anonymous callers (no X-Acrux-Wallet) skip the
+  // Detect per-wallet abuse before writing score: a single wallet exceeding
+  // ABUSE_RPS in the 1s window flips this request into decay mode instead of
+  // the +1 reward. Anonymous callers can't be attributed and skip both paths.
+  const walletRps = wallet ? await currentWalletRps(wallet) : 0;
+  const abusive = wallet !== null && walletRps > ABUSE_RPS;
+
+  // Reward (+1) or decay (-N) the paid request. Anonymous callers skip the
   // ledger write entirely so we never invent a synthetic identity.
   let postState = wallet
-    ? await bumpScore(wallet, 1, "paid_request")
+    ? await bumpScore(
+        wallet,
+        abusive ? -ABUSE_DECAY : 1,
+        abusive ? "wallet_rps_abuse" : "paid_request",
+      )
     : null;
 
   // Auto-slash at the floor: 100% of stake → pool, then re-read state so the
@@ -69,6 +102,8 @@ const handler = async (req: Request) => {
             score: postState?.score ?? price.walletScore,
             tier: postState?.tier ?? price.walletTier,
             stakeSats: postState?.stakeSats ?? price.walletStakeSats,
+            rps: walletRps,
+            abusive,
           }
         : null,
       slash: slashEvent,
