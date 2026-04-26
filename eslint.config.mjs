@@ -25,6 +25,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone runtime scripts — no React/Next rules apply.
+    "scripts/**",
     // Local-only reference folders (gitignored, not part of the build).
     "Nobell-Decentralized-Equity-Marketplace/**",
   ]),
