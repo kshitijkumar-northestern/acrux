@@ -1,4 +1,8 @@
 import { getRedis } from "./redis";
+import { walletMultiplier } from "./reputation";
+import type { LoadBand, PriceQuote } from "./types";
+
+export type { LoadBand, PriceQuote };
 
 const RPS_KEY = "acrux:rps:requests";
 const RPS_WINDOW_MS = 1_000;
@@ -14,17 +18,8 @@ const MAX_MULTIPLIER = Math.max(
     10_000,
 );
 
-export type LoadBand = "idle" | "light" | "hot" | "attack";
-
-export interface PriceQuote {
-  basePriceSats: number;
-  rps: number;
-  multiplier: number;
-  priceSats: number;
-  load: LoadBand;
-  maxMultiplier: number;
-  quotedAt: string;
-}
+// Anonymous requests (no X-Acrux-Wallet header) are priced at the neutral tier.
+const NEUTRAL_MULTIPLIER = 1;
 
 // Sketch backed by a Redis sorted set keyed on timestamp. Trimmed on every
 // write so the structure stays bounded under attack.
@@ -65,6 +60,36 @@ export function loadBand(rps: number): LoadBand {
   if (rps <= 10) return "light";
   if (rps <= 100) return "hot";
   return "attack";
+}
+
+// Resolves a wallet's reputation multiplier. A null score (request without
+// X-Acrux-Wallet) is treated as neutral so anonymous callers pay base × surge.
+export function walletMultiplierForScore(score: number | null): number {
+  return score === null ? NEUTRAL_MULTIPLIER : walletMultiplier(score);
+}
+
+// Composes the surge multiplier and wallet multiplier into the single factor
+// applied to the base price. Centralised so /api/data, /api/price, /api/search
+// and /api/synth all charge identically.
+export function composeMultiplier(
+  surge: number,
+  walletMul: number,
+): number {
+  return surge * walletMul;
+}
+
+// The locked pricing formula:
+//   finalPriceSats = max(1, ceil(basePriceSats × surge × walletMultiplier))
+// Returns at least 1 sat so MDK always has a chargeable invoice amount.
+export function composeFinalPriceSats(
+  basePriceSats: number,
+  surge: number,
+  walletMul: number,
+): number {
+  return Math.max(
+    1,
+    Math.ceil(basePriceSats * composeMultiplier(surge, walletMul)),
+  );
 }
 
 export async function currentPrice(): Promise<PriceQuote> {
