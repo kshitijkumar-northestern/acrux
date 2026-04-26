@@ -1,5 +1,6 @@
 import { withPayment } from "@moneydevkit/nextjs/server";
 import { currentPriceForWallet, recordRequest } from "@/lib/pricing";
+import { bumpScore } from "@/lib/reputation";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,6 +28,12 @@ const handler = async (req: Request) => {
   const wallet = readWallet(req);
   const price = await currentPriceForWallet(wallet);
 
+  // Reward the paid request. Anonymous callers (no X-Acrux-Wallet) skip the
+  // ledger write entirely so we never invent a synthetic identity.
+  const postState = wallet
+    ? await bumpScore(wallet, 1, "paid_request")
+    : null;
+
   return Response.json(
     {
       ok: true,
@@ -43,9 +50,9 @@ const handler = async (req: Request) => {
       wallet: wallet
         ? {
             wallet,
-            score: price.walletScore,
-            tier: price.walletTier,
-            stakeSats: price.walletStakeSats,
+            score: postState?.score ?? price.walletScore,
+            tier: postState?.tier ?? price.walletTier,
+            stakeSats: postState?.stakeSats ?? price.walletStakeSats,
           }
         : null,
       payload: {
