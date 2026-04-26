@@ -16,12 +16,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Acrux — economic immune system for the agent economy",
+  title: "acrux · programmable paywall for ai agents",
   description:
     "Drop-in Lightning middleware. Per-load surge pricing, per-wallet attacker pricing, reputation staking with slashing.",
   metadataBase: new URL("https://acrux.run"),
   openGraph: {
-    title: "Acrux — economic immune system for the agent economy",
+    title: "acrux · programmable paywall for ai agents",
     description:
       "Drop-in Lightning middleware that prices attackers out and pays honest agents back. Real Lightning, sub-cent settlement, no signups.",
     type: "website",

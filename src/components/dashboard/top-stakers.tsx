@@ -35,7 +35,7 @@ export function TopStakers({ stakers }: { stakers: WalletState[] }) {
       <CardContent>
         {stakers.length === 0 ? (
           <p className="text-[13px] text-muted-foreground">
-            no stakers yet — first POST /api/stake/deposit appears here
+            no stakers yet. first POST /api/stake/deposit appears here.
           </p>
         ) : (
           <Table className="font-mono text-[12px]">

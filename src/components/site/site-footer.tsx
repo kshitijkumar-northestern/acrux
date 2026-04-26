@@ -19,12 +19,15 @@ export function SiteFooter() {
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-12 px-6 py-16 lg:px-8">
         <div className="grid gap-12 sm:grid-cols-3">
           <div className="flex flex-col gap-3">
-            <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-              Acrux
-            </span>
+            <Link
+              href="/"
+              className="text-[13px] font-bold tracking-tight text-foreground"
+            >
+              acrux
+            </Link>
             <p className="max-w-xs text-[13px] leading-[1.6] text-muted-foreground">
               Drop-in Lightning middleware. Surge pricing, per-wallet pricing,
-              reputation staking — settled in milliseconds, no signups.
+              reputation staking. Settled in milliseconds, no signups.
             </p>
           </div>
           <FooterColumn label="Primitives" items={PRIMITIVES} />
@@ -39,7 +42,7 @@ export function SiteFooter() {
               href="/dashboard"
               className="text-muted-foreground transition-colors hover:text-foreground"
             >
-              Dashboard
+              dashboard
             </Link>
             <Link
               href="https://github.com/kshitijkumar-northestern/acrux"

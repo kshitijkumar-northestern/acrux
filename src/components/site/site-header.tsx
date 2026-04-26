@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const NAV_LINKS = [
-  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard", label: "dashboard" },
   { href: "/api/price", label: "/api/price" },
   { href: "/api/ping", label: "/api/ping" },
 ] as const;
@@ -17,7 +17,7 @@ export function SiteHeader() {
           <span className="font-bold text-foreground">acrux</span>
           <span className="hidden text-muted-foreground sm:inline">/</span>
           <span className="hidden font-medium text-muted-foreground sm:inline">
-            economic immune system
+            programmable paywall for ai agents
           </span>
         </Link>
         <nav className="flex items-center gap-0.5 text-[13px]">

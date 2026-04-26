@@ -10,7 +10,7 @@ export function getRedis(): Redis {
 
   if (!url || !token) {
     throw new Error(
-      "Acrux: missing UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN. " +
+      "acrux: missing UPSTASH_REDIS_REST_URL or UPSTASH_REDIS_REST_TOKEN. " +
         "Sign up at https://upstash.com (free tier) and copy creds to .env.local.",
     );
   }
