@@ -162,3 +162,4 @@ docs/private/
 
 # Internal 24-hour build spec — kept off the public repo for now
 AGENTS.md
+.env*.local
