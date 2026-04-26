@@ -160,6 +160,5 @@ __pycache__/
 # Team-only docs (plans, kickoffs, internal notes — never committed)
 docs/private/
 
-# Held back during the build — resurface before submission
-README.md
+# Internal 24-hour build spec — kept off the public repo for now
 AGENTS.md
