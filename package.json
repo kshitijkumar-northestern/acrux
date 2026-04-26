@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "smoke": "node scripts/smoke-stake.mjs"
+    "smoke": "node scripts/smoke-stake.mjs",
+    "demo": "python3 scripts/bots/run-demo.py"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
