@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Zap } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
@@ -13,15 +12,11 @@ export function SiteHeader() {
       <div className="mx-auto flex h-14 w-full max-w-[1200px] items-center justify-between gap-4 px-6 lg:px-8">
         <Link
           href="/"
-          className="group flex items-center gap-2 text-[13px] font-medium tracking-tight"
+          className="flex items-center gap-2 text-[13px] tracking-tight"
         >
-          <Zap
-            className="size-3.5 text-[color:var(--color-lightning)] transition-transform group-hover:-translate-y-0.5"
-            aria-hidden
-          />
-          <span className="text-foreground">Acrux</span>
+          <span className="font-bold text-foreground">acrux</span>
           <span className="hidden text-muted-foreground sm:inline">/</span>
-          <span className="hidden text-muted-foreground sm:inline">
+          <span className="hidden font-medium text-muted-foreground sm:inline">
             economic immune system
           </span>
         </Link>
