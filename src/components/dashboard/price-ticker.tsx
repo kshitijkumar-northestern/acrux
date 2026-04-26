@@ -19,14 +19,12 @@ export function PriceTicker({ price }: { price: WalletPriceQuote }) {
       caption={
         <span className="flex flex-wrap items-baseline gap-x-2">
           <span>{composed}</span>
-          <span className="text-[color:var(--color-subtle)]">·</span>
-          <span className="text-[color:var(--color-subtle)]">
+          <span className="text-muted-foreground/60">·</span>
+          <span>
             load <LoadLabel load={price.load} />
           </span>
-          <span className="text-[color:var(--color-subtle)]">·</span>
-          <span className="text-[color:var(--color-subtle)]">
-            rps {price.rps}
-          </span>
+          <span className="text-muted-foreground/60">·</span>
+          <span>rps {price.rps}</span>
         </span>
       }
     />
@@ -41,11 +39,11 @@ function formatMultiplier(m: number): string {
 }
 
 function LoadLabel({ load }: { load: WalletPriceQuote["load"] }) {
-  const color =
+  const className =
     load === "attack"
-      ? "#f87171"
+      ? "text-destructive"
       : load === "hot"
-        ? "var(--color-accent)"
-        : "var(--color-muted)";
-  return <span style={{ color }}>{load}</span>;
+        ? "text-[color:var(--color-lightning)]"
+        : "text-foreground";
+  return <span className={className}>{load}</span>;
 }
