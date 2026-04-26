@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
+import { LiveStatus } from "@/components/landing/live-status";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -22,20 +23,12 @@ const PRIMITIVES = [
   },
 ] as const;
 
-const STATUS = [
-  { hour: "0–3", label: "L402 paywall live at /api/ping", done: true },
-  { hour: "3–6", label: "Surge engine + free /api/price quote", done: true },
-  { hour: "6–10", label: "Reputation staking with slashing", done: true },
-  { hour: "10–13", label: "Per-wallet pricing layer", done: true },
-  { hour: "13–17", label: "Dashboard + dueling-bots demo", done: true },
-] as const;
-
 export default function Home() {
   return (
     <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-24 px-6 py-20 sm:py-24 lg:gap-32 lg:px-8 lg:py-28">
       <Hero />
       <Primitives />
-      <BuildStatus />
+      <LiveSection />
       <TryIt />
     </div>
   );
@@ -115,41 +108,14 @@ function Primitives() {
   );
 }
 
-function BuildStatus() {
+function LiveSection() {
   return (
     <section className="flex flex-col gap-8">
       <SectionLabel
-        eyebrow="Build status"
-        description="signet (mutinynet) · mainnet swap @ H21"
+        eyebrow="Live status"
+        description="Pulled from /api/dashboard every 2 seconds. signet (mutinynet)."
       />
-      <Card size="sm">
-        <CardContent>
-          <ul className="flex flex-col gap-2 font-mono text-[13px]">
-            {STATUS.map((s) => (
-              <li key={s.hour} className="flex items-baseline gap-3">
-                <span className="w-12 shrink-0 text-muted-foreground">
-                  H{s.hour}
-                </span>
-                <span
-                  aria-hidden
-                  className={
-                    s.done ? "text-foreground" : "text-muted-foreground"
-                  }
-                >
-                  {s.done ? "▸" : "○"}
-                </span>
-                <span
-                  className={
-                    s.done ? "text-foreground" : "text-muted-foreground"
-                  }
-                >
-                  {s.label}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </CardContent>
-      </Card>
+      <LiveStatus />
     </section>
   );
 }
