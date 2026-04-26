@@ -1,4 +1,8 @@
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const PRIMITIVES = [
   {
@@ -20,92 +24,123 @@ const PRIMITIVES = [
 
 const STATUS = [
   { hour: "0–3", label: "L402 paywall live at /api/ping", done: true },
-  { hour: "3–6", label: "Surge engine + free /api/price quote", done: false },
-  { hour: "6–10", label: "Reputation staking with slashing", done: false },
-  { hour: "10–13", label: "Per-wallet pricing layer", done: false },
-  { hour: "13–17", label: "Dashboard + dueling-bots demo", done: false },
+  { hour: "3–6", label: "Surge engine + free /api/price quote", done: true },
+  { hour: "6–10", label: "Reputation staking with slashing", done: true },
+  { hour: "10–13", label: "Per-wallet pricing layer", done: true },
+  { hour: "13–17", label: "Dashboard + dueling-bots demo", done: true },
 ] as const;
 
 export default function Home() {
   return (
-    <div className="min-h-screen px-6 py-16 sm:py-24">
-      <main className="mx-auto w-full max-w-3xl space-y-16">
-        <header className="space-y-4">
-          <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-[color:var(--color-accent)]">
-            <span aria-hidden>⚡</span>
-            <span>acrux</span>
-            <span className="text-[color:var(--color-subtle)]">·</span>
-            <span className="text-[color:var(--color-subtle)]">
-              hacknation challenge 02
-            </span>
-          </div>
+    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-24 px-6 py-20 sm:py-24 lg:gap-32 lg:px-8 lg:py-28">
+      <Hero />
+      <Primitives />
+      <BuildStatus />
+      <TryIt />
+    </div>
+  );
+}
 
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Economic immune system for the agent economy.
-          </h1>
+function Hero() {
+  return (
+    <section className="flex flex-col gap-6">
+      <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        Hacknation Challenge 02 · economic immune system
+      </span>
+      <h1 className="max-w-4xl text-balance text-5xl leading-[1.05] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
+        Price attackers out.{" "}
+        <span className="text-muted-foreground">Pay honest agents back.</span>
+      </h1>
+      <p className="max-w-2xl text-[15px] leading-[1.6] text-muted-foreground sm:text-base">
+        Acrux is a drop-in Lightning Network middleware. Per-load surge pricing,
+        per-wallet attacker pricing, and reputation staking with slashing —
+        every transaction settles in milliseconds. No signups, no API keys, no
+        chargebacks.
+      </p>
+      <div className="flex flex-wrap items-center gap-2 pt-2">
+        <Link
+          href="/dashboard"
+          className="group inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground px-3.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
+        >
+          Open dashboard
+          <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+        </Link>
+        <Link
+          href="/api/price"
+          className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-transparent px-3.5 text-[13px] font-medium text-foreground transition-colors hover:bg-card"
+        >
+          curl /api/price
+        </Link>
+      </div>
+    </section>
+  );
+}
 
-          <p className="max-w-2xl text-base leading-relaxed text-[color:var(--color-muted)]">
-            Acrux is a drop-in Lightning Network middleware that auto-prices
-            attackers out, pays honest agents back, and settles every
-            transaction in milliseconds. No signups, no API keys, no
-            chargebacks.
-          </p>
-        </header>
-
-        <section className="grid gap-3 sm:grid-cols-3">
-          {PRIMITIVES.map((p) => (
-            <article
-              key={p.label}
-              className="rounded-lg border border-[color:var(--color-border)] bg-white/[0.02] p-5 transition-colors hover:bg-white/[0.04]"
-            >
-              <div className="mb-3 flex items-center gap-2 font-mono text-xs">
-                <span className="rounded bg-[color:var(--color-accent-soft)] px-1.5 py-0.5 text-[color:var(--color-accent)]">
+function Primitives() {
+  return (
+    <section className="flex flex-col gap-8">
+      <SectionLabel
+        eyebrow="Primitives"
+        description="Three things Acrux does that nothing else can."
+      />
+      <div className="grid gap-4 sm:grid-cols-3">
+        {PRIMITIVES.map((p) => (
+          <Card
+            key={p.label}
+            className="transition-colors hover:border-foreground/20"
+            size="sm"
+          >
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="font-mono">
                   {p.label}
-                </span>
-                <span className="text-[color:var(--color-subtle)] uppercase tracking-wider">
+                </Badge>
+                <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
                   primitive
                 </span>
               </div>
-              <h3 className="mb-2 text-sm font-semibold tracking-tight">
+              <CardTitle className="text-[15px] font-semibold tracking-tight">
                 {p.title}
-              </h3>
-              <p className="text-sm leading-relaxed text-[color:var(--color-muted)]">
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-[13px] leading-[1.6] text-muted-foreground">
                 {p.body}
               </p>
-            </article>
-          ))}
-        </section>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </section>
+  );
+}
 
-        <section className="rounded-lg border border-[color:var(--color-border)] p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <div className="font-mono text-xs uppercase tracking-wider text-[color:var(--color-subtle)]">
-              build status
-            </div>
-            <div className="font-mono text-xs text-[color:var(--color-subtle)]">
-              signet (mutinynet) · mainnet swap @ H21
-            </div>
-          </div>
-          <ul className="space-y-1.5 font-mono text-sm">
+function BuildStatus() {
+  return (
+    <section className="flex flex-col gap-8">
+      <SectionLabel
+        eyebrow="Build status"
+        description="signet (mutinynet) · mainnet swap @ H21"
+      />
+      <Card size="sm">
+        <CardContent>
+          <ul className="flex flex-col gap-2 font-mono text-[13px]">
             {STATUS.map((s) => (
               <li key={s.hour} className="flex items-baseline gap-3">
-                <span className="w-14 shrink-0 text-[color:var(--color-subtle)]">
+                <span className="w-12 shrink-0 text-muted-foreground">
                   H{s.hour}
                 </span>
                 <span
                   aria-hidden
                   className={
-                    s.done
-                      ? "text-[color:var(--color-accent)]"
-                      : "text-[color:var(--color-subtle)]"
+                    s.done ? "text-foreground" : "text-muted-foreground"
                   }
                 >
                   {s.done ? "▸" : "○"}
                 </span>
                 <span
                   className={
-                    s.done
-                      ? "text-[color:var(--color-foreground)]"
-                      : "text-[color:var(--color-muted)]"
+                    s.done ? "text-foreground" : "text-muted-foreground"
                   }
                 >
                   {s.label}
@@ -113,44 +148,56 @@ export default function Home() {
               </li>
             ))}
           </ul>
-        </section>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
 
-        <section className="space-y-3">
-          <h2 className="font-mono text-xs uppercase tracking-wider text-[color:var(--color-subtle)]">
-            try it
-          </h2>
-          <div className="space-y-2 rounded-lg border border-[color:var(--color-border)] bg-black/40 p-4 font-mono text-xs leading-relaxed">
-            <div className="text-[color:var(--color-subtle)]"># Free price quote — read the live surge multiplier</div>
-            <div>
-              <span className="text-[color:var(--color-accent)]">$</span> curl
-              localhost:3000/api/price
-            </div>
-            <div className="pt-2 text-[color:var(--color-subtle)]"># Paywalled ping — returns 402 + Lightning invoice on first hit</div>
-            <div>
-              <span className="text-[color:var(--color-accent)]">$</span> curl
-              -i localhost:3000/api/ping
-            </div>
+function TryIt() {
+  return (
+    <section className="flex flex-col gap-8">
+      <SectionLabel
+        eyebrow="Try it"
+        description="Live on signet — copy-paste, no auth."
+      />
+      <Card size="sm" className="bg-black/40">
+        <CardContent className="flex flex-col gap-2 font-mono text-[12px] leading-[1.6]">
+          <div className="text-muted-foreground">
+            # Free price quote — read the live surge multiplier
           </div>
-        </section>
+          <div>
+            <span className="text-muted-foreground">$</span> curl
+            localhost:3000/api/price
+          </div>
+          <div className="pt-2 text-muted-foreground">
+            # Paywalled ping — returns 402 + Lightning invoice on first hit
+          </div>
+          <div>
+            <span className="text-muted-foreground">$</span> curl -i
+            localhost:3000/api/ping
+          </div>
+        </CardContent>
+      </Card>
+    </section>
+  );
+}
 
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--color-border)] pt-6 font-mono text-xs text-[color:var(--color-subtle)]">
-          <div>acrux · signet (mutinynet) · mainnet swap @ H21</div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/api/price"
-              className="hover:text-[color:var(--color-foreground)]"
-            >
-              /api/price
-            </Link>
-            <Link
-              href="/api/ping"
-              className="hover:text-[color:var(--color-foreground)]"
-            >
-              /api/ping
-            </Link>
-          </div>
-        </footer>
-      </main>
+function SectionLabel({
+  eyebrow,
+  description,
+}: {
+  eyebrow: string;
+  description: string;
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+        {eyebrow}
+      </span>
+      <p className="text-[13px] leading-[1.6] text-muted-foreground">
+        {description}
+      </p>
     </div>
   );
 }

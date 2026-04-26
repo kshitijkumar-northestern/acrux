@@ -9,11 +9,12 @@ export function PoolCounter({
   poolSats: number;
   recentSlashCount: number;
 }) {
-  const captionParts = [`from ${recentSlashCount} recent slash${recentSlashCount === 1 ? "" : "es"}`];
+  const captionParts = [
+    `from ${recentSlashCount} recent slash${recentSlashCount === 1 ? "" : "es"}`,
+  ];
   if (poolSats === 0) captionParts.push("awaiting next abuse");
   return (
     <StatCard
-      accent
       label="protocol pool"
       value={`${SAT_FMT.format(poolSats)} sat${poolSats === 1 ? "" : "s"}`}
       caption={captionParts.join(" · ")}
