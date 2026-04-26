@@ -1,20 +1,25 @@
 "use client";
 
-import { useDashboard } from "@/lib/use-dashboard";
+import { PoolCounter, TotalStakedCounter } from "@/components/dashboard/pool-counter";
+import { PriceTicker } from "@/components/dashboard/price-ticker";
+import { RpsSparkline } from "@/components/dashboard/rps-sparkline";
+import { SlashLog } from "@/components/dashboard/slash-log";
+import { TopStakers } from "@/components/dashboard/top-stakers";
+import { useDashboard, type DashboardSnapshot } from "@/lib/use-dashboard";
 
 export default function DashboardPage() {
   const { data, error, status, lastUpdated } = useDashboard(1000);
 
   return (
     <div className="min-h-screen px-6 py-10 sm:py-14">
-      <main className="mx-auto w-full max-w-6xl space-y-10">
+      <main className="mx-auto w-full max-w-6xl space-y-8">
         <DashboardHeader status={status} lastUpdated={lastUpdated} />
         {error ? (
           <ErrorPanel error={error} />
         ) : !data ? (
           <LoadingPanel />
         ) : (
-          <Placeholder data={data} />
+          <Tiles data={data} />
         )}
       </main>
     </div>
@@ -112,18 +117,30 @@ function ErrorPanel({
   );
 }
 
-function Placeholder({
-  data,
-}: {
-  data: { generatedAt: string };
-}) {
+function Tiles({ data }: { data: DashboardSnapshot }) {
   return (
-    <section className="rounded-lg border border-[color:var(--color-border)] p-6 font-mono text-xs text-[color:var(--color-subtle)]">
-      <div className="mb-2 uppercase tracking-wider">scaffolded</div>
-      <div className="text-[color:var(--color-muted)]">
-        Live snapshot received at {data.generatedAt}. Widgets land in the next
-        commit.
-      </div>
-    </section>
+    <>
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <PriceTicker price={data.price} />
+        <PoolCounter
+          poolSats={data.stake.pool}
+          recentSlashCount={data.recentSlashes.length}
+        />
+        <TotalStakedCounter
+          totalStakedSats={data.stake.totalStaked}
+          walletCount={data.topStakers.length}
+        />
+      </section>
+      <RpsSparkline
+        rps={data.price.rps}
+        load={data.price.load}
+        multiplier={data.price.multiplier}
+        generatedAt={data.generatedAt}
+      />
+      <section className="grid gap-4 lg:grid-cols-2">
+        <TopStakers stakers={data.topStakers} />
+        <SlashLog events={data.recentSlashes} />
+      </section>
+    </>
   );
 }
