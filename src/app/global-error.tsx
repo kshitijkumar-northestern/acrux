@@ -26,7 +26,7 @@ export default function GlobalError({
             The app shell crashed.
           </h1>
           <p className="max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
-            This is the last-resort fallback — the layout itself failed to
+            This is the last-resort fallback. The layout itself failed to
             render. Try resetting; if the failure persists, reload the page.
           </p>
           <div className="rounded-lg border border-border bg-card px-3 py-2 font-mono text-[12px] text-destructive">

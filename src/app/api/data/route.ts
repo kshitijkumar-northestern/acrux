@@ -157,9 +157,9 @@ const handler = async (req: Request) => {
         slash: slashEvent,
         payload: {
           headline:
-            "The agent economy is forming. Acrux is its immune system.",
+            "The agent economy is forming. acrux is the paywall layer.",
           source:
-            "acrux demo payload — swap for Tavily real-time search at Hour 3+",
+            "acrux demo payload · swap for Tavily real-time search at Hour 3+",
           timestamp: new Date().toISOString(),
         },
         note:

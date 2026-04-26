@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     return Response.json({
       ok: true,
       ...state,
-      note: "Demo deposit — production gates this on a settled Lightning invoice.",
+      note: "Demo deposit. Production gates this on a settled Lightning invoice.",
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "unknown error";

@@ -28,7 +28,7 @@ export default function RouteError({
         </h1>
         <p className="max-w-2xl text-[15px] leading-[1.6] text-muted-foreground">
           The middleware itself is fine. This is a render-side failure on this
-          route. Try again — if it keeps happening the message below has the
+          route. Try again. If it keeps happening, the message below has the
           details.
         </p>
       </div>

@@ -41,7 +41,7 @@ export default function NotFound() {
           >
             <span aria-hidden className="text-muted-foreground">▸</span>
             <span className="w-32 shrink-0 text-muted-foreground">/api/price</span>
-            <span>free price quote — base × surge × wallet</span>
+            <span>free price quote · base × surge × wallet</span>
           </Link>
           <Link
             href="/api/dashboard"

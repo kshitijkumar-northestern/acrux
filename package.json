@@ -2,7 +2,7 @@
   "name": "acrux",
   "version": "0.1.0",
   "private": true,
-  "description": "Acrux — economic immune system for the agent economy. Per-load surge pricing, per-wallet attacker pricing, and reputation staking with slashing, all settled on Lightning.",
+  "description": "Acrux · programmable paywall for AI agents. Per-load surge, per-wallet attacker pricing, reputation staking with slashing, settled on Lightning.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

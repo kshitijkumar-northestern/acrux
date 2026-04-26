@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import {
   useDashboard,
   type DashboardError,
+  type DashboardResponse,
   type DashboardSnapshot,
 } from "@/lib/use-dashboard";
 
@@ -17,8 +18,8 @@ interface Row {
   done: boolean;
 }
 
-export function LiveStatus() {
-  const { data, error, status, lastUpdated } = useDashboard(POLL_MS);
+export function LiveStatus({ initial }: { initial: DashboardResponse | null }) {
+  const { data, error, status, lastUpdated } = useDashboard(initial, POLL_MS);
   const rows = data ? buildRows(data) : EMPTY_ROWS;
 
   return (
