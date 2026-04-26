@@ -157,9 +157,6 @@ __pycache__/
 *.egg-info/
 .venv/
 
-# Local-only reference folders (never committed)
-Nobell-Decentralized-Equity-Marketplace/
-
 # Team-only docs (plans, kickoffs, internal notes — never committed)
 docs/private/
 
