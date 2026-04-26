@@ -13,7 +13,6 @@ export function PriceTicker({ price }: { price: WalletPriceQuote }) {
           : "");
   return (
     <StatCard
-      accent
       label="current price"
       value={`${SAT_FMT.format(price.finalPriceSats)} sat${price.finalPriceSats === 1 ? "" : "s"}`}
       caption={
@@ -40,10 +39,6 @@ function formatMultiplier(m: number): string {
 
 function LoadLabel({ load }: { load: WalletPriceQuote["load"] }) {
   const className =
-    load === "attack"
-      ? "text-destructive"
-      : load === "hot"
-        ? "text-[color:var(--color-lightning)]"
-        : "text-foreground";
+    load === "attack" ? "text-destructive" : "text-foreground";
   return <span className={className}>{load}</span>;
 }

@@ -92,10 +92,7 @@ function Primitives() {
           >
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Badge
-                  variant="outline"
-                  className="border-[color:var(--color-lightning)]/40 bg-[color:var(--color-lightning-soft)] text-[color:var(--color-lightning)]"
-                >
+                <Badge variant="secondary" className="font-mono">
                   {p.label}
                 </Badge>
                 <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -136,9 +133,7 @@ function BuildStatus() {
                 <span
                   aria-hidden
                   className={
-                    s.done
-                      ? "text-[color:var(--color-lightning)]"
-                      : "text-muted-foreground"
+                    s.done ? "text-foreground" : "text-muted-foreground"
                   }
                 >
                   {s.done ? "▸" : "○"}
@@ -172,15 +167,15 @@ function TryIt() {
             # Free price quote — read the live surge multiplier
           </div>
           <div>
-            <span className="text-[color:var(--color-lightning)]">$</span> curl
+            <span className="text-muted-foreground">$</span> curl
             localhost:3000/api/price
           </div>
           <div className="pt-2 text-muted-foreground">
             # Paywalled ping — returns 402 + Lightning invoice on first hit
           </div>
           <div>
-            <span className="text-[color:var(--color-lightning)]">$</span> curl
-            -i localhost:3000/api/ping
+            <span className="text-muted-foreground">$</span> curl -i
+            localhost:3000/api/ping
           </div>
         </CardContent>
       </Card>

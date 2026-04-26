@@ -42,6 +42,7 @@
 
   --color-lightning: var(--lightning);
   --color-lightning-soft: var(--lightning-soft);
+  --color-success: var(--success);
 
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
@@ -87,8 +88,12 @@
   --sidebar-border: oklch(1 0 0 / 13%);
   --sidebar-ring: oklch(0.55 0 0);
 
+  /* Reserved EXCLUSIVELY for the brand mark (Zap logo) and ::selection. */
   --lightning: #f7931a;
   --lightning-soft: rgba(247, 147, 26, 0.1);
+
+  /* Reserved EXCLUSIVELY for the live status dot (single instance per page). */
+  --success: #00cc66;
 }
 
 @layer base {

@@ -47,7 +47,7 @@ export function SlashLog({ events }: { events: SlashEvent[] }) {
                     </span>
                   </div>
                   <div className="flex flex-col items-end">
-                    <span className="font-semibold text-[color:var(--color-lightning)] tabular-nums">
+                    <span className="font-semibold tabular-nums text-destructive">
                       −{SAT_FMT.format(e.slashedSats)} sat
                     </span>
                     <span className="text-muted-foreground">

@@ -129,7 +129,7 @@ function colorForLoad(load: LoadBand): string {
     case "attack":
       return "oklch(0.62 0.21 25)";
     case "hot":
-      return "#f7931a";
+      return "oklch(0.85 0 0)";
     case "light":
       return "oklch(0.7 0 0)";
     case "idle":
