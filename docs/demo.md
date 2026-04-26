@@ -26,6 +26,25 @@ This calls `scripts/bots/run-demo.py`, the orchestrator. It:
 4. Hits `/api/stake/slash` against the spam bot's wallet at T+30s.
 5. Shuts everything down at T+60s.
 
+By default the bots target **`/api/data`** — a paywalled mock endpoint
+with no upstream cost. This means you can run `pnpm demo` repeatedly
+without burning Tavily credits or any other paid quota. The demo arc on
+the dashboard is identical to running against a real upstream because
+acrux's surge / per-wallet / slash logic is the same on every paid route.
+
+## Opting into a real upstream (live pitch only)
+
+For the one moment in your pitch video where you want to demonstrate the
+proxy is real, point the bots at `/api/search` (proxies Tavily):
+
+```bash
+ACRUX_BOT_TARGET=/api/search pnpm demo
+```
+
+Tavily's free tier is 1,000 calls/month. One full demo run is ~74 calls
+(60 honest + 14 spam), so you can afford ~13 live runs. Default to
+`/api/data` for everything except the recorded pitch take.
+
 Open [`/dashboard`](http://localhost:3000/dashboard) in another window before launching to watch the price and slash log react live.
 
 ## Running the bots manually

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
-"""Hostile Acrux agent.
+"""Hostile acrux agent.
 
-Stakes a small amount, then hammers /api/search at high RPS. Each iteration
-the bot's score drops -10 via the admin path (the same simulation cheat the
-honest agent uses — see scripts/bots/README.md). Once score hits the floor
-(-100) and the wallet still has stake, the bot calls the admin slash
-endpoint to drain 100% of its stake into the protocol pool.
+Stakes a small amount, then hammers ACRUX_BOT_TARGET (default /api/data —
+paywalled mock JSON, zero upstream cost) at high RPS. Each iteration the
+bot's score drops -10 via the admin path. Once score hits the floor (-100)
+and the wallet still has stake, the bot calls the admin slash endpoint to
+drain 100% of its stake into the protocol pool.
 
 The narrative for the demo:
     1. Spam bot deposits 5k.
@@ -31,10 +31,14 @@ ITERATIONS = int(os.environ.get("ACRUX_BOT_ITERATIONS", "12"))
 STAKE_SATS = int(os.environ.get("ACRUX_BOT_STAKE", "5000"))
 SCORE_STEP = int(os.environ.get("ACRUX_BOT_SCORE_STEP", "-10"))
 DELAY_SECONDS = float(os.environ.get("ACRUX_BOT_DELAY", "0.4"))
-# Tight ceiling on the paywall-gated call so a hung MDK checkout (e.g. while the
-# merchant domain is still propagating) doesn't stall the bot. Score/slash work
-# entirely through admin endpoints, so the demo arc is unaffected.
-SEARCH_TIMEOUT_S = float(os.environ.get("ACRUX_BOT_SEARCH_TIMEOUT", "1.5"))
+# The paywalled endpoint we hammer. Defaults to /api/data (mock JSON, no
+# upstream cost) so repeated demo runs do not burn Tavily credits. Override
+# to /api/search for the "real upstream" moment in a live pitch.
+TARGET = os.environ.get("ACRUX_BOT_TARGET", "/api/data")
+# Tight ceiling on the paywall-gated call so a hung MDK checkout (e.g. while
+# the merchant domain is still propagating) doesn't stall the bot. Score and
+# slash work entirely through admin endpoints, so the demo arc is unaffected.
+TARGET_TIMEOUT_S = float(os.environ.get("ACRUX_BOT_TARGET_TIMEOUT", "1.5"))
 FLOOR = -100
 
 
@@ -61,10 +65,10 @@ def deposit(sats: int) -> dict[str, Any]:
 def hammer(query: str) -> str:
     try:
         r = requests.post(
-            f"{BASE}/api/search",
+            f"{BASE}{TARGET}",
             json={"q": query},
             headers={"X-Acrux-Wallet": WALLET},
-            timeout=SEARCH_TIMEOUT_S,
+            timeout=TARGET_TIMEOUT_S,
         )
         return str(r.status_code)
     except requests.Timeout:
@@ -106,6 +110,7 @@ def get_state() -> dict[str, Any]:
 
 def main() -> None:
     print(f"[spam-bot] base   = {BASE}")
+    print(f"[spam-bot] target = {TARGET}")
     print(f"[spam-bot] wallet = {WALLET}")
     print(f"[spam-bot] stake  = {STAKE_SATS} sats")
     print(f"[spam-bot] iters  = {ITERATIONS}, delay = {DELAY_SECONDS}s, step = {SCORE_STEP}")
@@ -123,7 +128,7 @@ def main() -> None:
         score = state.get("score")
         tier = state.get("tier")
         print(
-            f"[{i + 1:02d}] /api/search {status:<7} q={q:<10} "
+            f"[{i + 1:02d}] {TARGET} {status:<7} q={q:<10} "
             f"→ score={score} tier={tier} stake={state.get('stakeSats')}"
         )
         if not floored and score is not None and score <= FLOOR and state.get("stakeSats", 0) > 0:

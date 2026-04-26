@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Honest Acrux agent.
+"""Honest acrux agent.
 
-Deposits a stake, then loops paced paid queries against /api/search. Each
-successful "payment" credits +1 to the wallet score via the admin path
-(see scripts/bots/README.md for why we simulate the payment outcome rather
-than running a real L402 client from Python). Over ~50 iterations the wallet
-crosses the trusted threshold (+50) and the wallet multiplier drops to 0.5×.
+Deposits a stake, then loops paced paid requests against ACRUX_BOT_TARGET
+(default /api/data — paywalled mock JSON, zero upstream cost). Each iteration
+credits +1 to the wallet score via the admin path so the demo arc is driven
+by reputation writes rather than by a real L402 checkout from Python. Over
+~50 iterations the wallet crosses the trusted threshold (+50) and the wallet
+multiplier drops to 0.5×.
 """
 
 from __future__ import annotations
@@ -23,12 +24,14 @@ WALLET = os.environ.get("ACRUX_WALLET", f"honest_{int(time.time())}")
 ITERATIONS = int(os.environ.get("ACRUX_BOT_ITERATIONS", "60"))
 STAKE_SATS = int(os.environ.get("ACRUX_BOT_STAKE", "10000"))
 DELAY_SECONDS = float(os.environ.get("ACRUX_BOT_DELAY", "1.0"))
-# /api/search goes through the L402 paywall, which depends on MDK reaching the
-# merchant webhook over the public domain. In local dev that webhook is often
-# unreachable, so we keep this timeout tight and tolerate any failure — the
-# story the bot tells comes from /api/stake/score, not from a successful
-# checkout.
-SEARCH_TIMEOUT_S = float(os.environ.get("ACRUX_BOT_SEARCH_TIMEOUT", "1.5"))
+# The paywalled endpoint we hammer. Defaults to /api/data (mock JSON, no
+# upstream cost) so repeated demo runs do not burn Tavily credits. Override
+# to /api/search for the "real upstream" moment in a live pitch.
+TARGET = os.environ.get("ACRUX_BOT_TARGET", "/api/data")
+# Tight ceiling on the paywall-gated call so a hung MDK checkout (e.g. while
+# the merchant domain is still propagating) doesn't stall the bot. Score is
+# driven by /api/stake/score, so the demo arc is unaffected by failures here.
+TARGET_TIMEOUT_S = float(os.environ.get("ACRUX_BOT_TARGET_TIMEOUT", "1.5"))
 
 QUERIES = [
     "bitcoin lightning network primer",
@@ -64,8 +67,8 @@ def deposit(sats: int) -> dict[str, Any]:
     return r.json()
 
 
-def search(query: str) -> str:
-    """Hit the real paid endpoint so the dashboard sees the request.
+def paid_request(query: str) -> str:
+    """Hit a paywalled endpoint so the dashboard sees the wallet's RPS.
 
     The first response is the L402 402 invoice. We don't pay it from Python;
     the score credit below is what makes the wallet's reputation move.
@@ -73,10 +76,10 @@ def search(query: str) -> str:
     """
     try:
         r = requests.post(
-            f"{BASE}/api/search",
+            f"{BASE}{TARGET}",
             json={"q": query},
             headers={"X-Acrux-Wallet": WALLET},
-            timeout=SEARCH_TIMEOUT_S,
+            timeout=TARGET_TIMEOUT_S,
         )
         return str(r.status_code)
     except requests.Timeout:
@@ -107,6 +110,7 @@ def get_state() -> dict[str, Any]:
 
 def main() -> None:
     print(f"[honest-agent] base   = {BASE}")
+    print(f"[honest-agent] target = {TARGET}")
     print(f"[honest-agent] wallet = {WALLET}")
     print(f"[honest-agent] stake  = {STAKE_SATS} sats")
     print(f"[honest-agent] iters  = {ITERATIONS}, delay = {DELAY_SECONDS}s")
@@ -119,12 +123,12 @@ def main() -> None:
     crossed_trusted = False
     for i in range(1, ITERATIONS + 1):
         q = QUERIES[(i - 1) % len(QUERIES)]
-        status = search(q)
+        status = paid_request(q)
         state = credit_score(+1, "demo_paid_request")
         score = state.get("score")
         tier = state.get("tier")
         print(
-            f"[{i + 1:02d}] /api/search {status:<7} q={q!r:<48} "
+            f"[{i + 1:02d}] {TARGET} {status:<7} q={q!r:<48} "
             f"→ score={score} tier={tier}"
         )
         if not crossed_trusted and tier == "trusted":
