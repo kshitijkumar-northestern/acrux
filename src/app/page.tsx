@@ -44,18 +44,18 @@ export default async function Home() {
 
 function Hero() {
   return (
-    <section className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)] lg:gap-64">
+    <section className="grid items-center gap-12 lg:grid-cols-2 lg:gap-12">
       <div className="flex flex-col gap-6">
         <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
           Hacknation Challenge 02 · adaptive paywall on lightning
         </span>
-        <h1 className="text-balance text-5xl leading-[1.05] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
+        <h1 className="text-balance text-4xl leading-[1.05] tracking-[-0.04em] sm:text-5xl lg:text-6xl">
           Price attackers out{" "}
           <span className="text-muted-foreground">
             pay honest agents back
           </span>
         </h1>
-        <p className="max-w-md text-[15px] leading-[1.6] text-muted-foreground sm:text-base">
+        <p className="max-w-md text-[14px] leading-[1.6] text-muted-foreground">
           <strong className="font-bold text-foreground">acrux</strong> is a
           drop-in Lightning Network middleware. Per-load surge pricing,
           per-wallet attacker pricing, and reputation staking with slashing.
@@ -65,14 +65,14 @@ function Hero() {
         <div className="flex flex-wrap items-center gap-2 pt-2">
           <Link
             href="/dashboard"
-            className="group inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground px-3.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
+            className="group inline-flex items-center gap-1.5 rounded-md bg-foreground px-2.5 py-1.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
           >
             network economics
             <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
           <Link
             href="/api/price"
-            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-transparent px-3.5 text-[13px] font-medium text-foreground transition-colors hover:bg-card"
+            className="inline-flex items-center gap-1.5 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-[13px] font-medium text-foreground transition-colors hover:bg-card"
           >
             curl /api/price
           </Link>
@@ -92,7 +92,7 @@ function HeroVisual({ className }: { className?: string }) {
   return (
     <div
       aria-hidden
-      className={`relative mx-auto aspect-square w-full max-w-[260px] select-none lg:mx-0 lg:max-w-[320px] lg:justify-self-end${
+      className={`relative mx-auto aspect-square w-full max-w-[206px] select-none lg:max-w-[360px] lg:justify-self-center${
         className ? ` ${className}` : ""
       }`}
     >
@@ -101,7 +101,7 @@ function HeroVisual({ className }: { className?: string }) {
         alt=""
         fill
         priority
-        sizes="(min-width: 1024px) 320px, 60vw"
+        sizes="(min-width: 1024px) 360px, 60vw"
         className="pointer-events-none object-contain mix-blend-lighten [mask-image:radial-gradient(circle_at_center,black_55%,transparent_82%)]"
       />
     </div>
@@ -123,7 +123,7 @@ function Primitives() {
           >
             <span
               aria-hidden
-              className="pointer-events-none absolute -top-9 right-8 select-none text-[4.5rem] font-semibold leading-none tracking-tight text-foreground/15"
+              className="pointer-events-none absolute -top-[16px] right-8 select-none text-[4.5rem] font-semibold leading-none tracking-tight text-foreground/15"
             >
               {String(i + 1).padStart(2, "0")}
             </span>
