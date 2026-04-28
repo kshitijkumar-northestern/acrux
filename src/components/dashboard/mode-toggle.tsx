@@ -30,7 +30,6 @@ export function ModeToggle({
             : "text-muted-foreground hover:text-foreground/80",
         )}
       >
-        {loading && !isLive ? <Spinner /> : null}
         sandbox
       </button>
 
@@ -69,17 +68,7 @@ export function ModeToggle({
         )}
       >
         live
-        {loading && isLive ? <Spinner /> : null}
       </button>
     </div>
-  );
-}
-
-function Spinner() {
-  return (
-    <span
-      aria-hidden
-      className="size-2.5 animate-spin rounded-full border-[1.5px] border-foreground/30 border-t-foreground"
-    />
   );
 }
