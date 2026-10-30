@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
 // Thin HTTP wrapper around getDashboardSnapshot(). The same function powers
 // SSR for the dashboard page, so the client renders against an identical
 // shape on first paint and on every poll. The optional ?mode= query toggles
-// between the composed sandbox view (default) and direct Redis state.
+// between the composed sandbox view (default), direct Redis state (live),
+// and the fully synthetic dummy payload (mock — zero Redis round trips).
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const mode = parseDashboardMode(url.searchParams.get("mode"));
