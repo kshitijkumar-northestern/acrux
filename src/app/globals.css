@@ -151,6 +151,16 @@ html:has([data-story]) {
 html:has([data-story]) body > footer {
   scroll-snap-align: end;
 }
+/* Touch: every swipe lands on exactly one phase, the way the wheel and
+   arrow keys step through them on desktop. Trackpads keep proximity. */
+@media (pointer: coarse) {
+  html:has([data-story]) {
+    scroll-snap-type: y mandatory;
+  }
+  [data-story-step] {
+    scroll-snap-stop: always;
+  }
+}
 
 /* Story panels cross-fade; children enter in a short stagger and leave in
    the direction of travel (up when scrolling down, down when scrolling up).
