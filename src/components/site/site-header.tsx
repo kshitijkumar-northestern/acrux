@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 
+import { AcruxMark } from "@/components/site/acrux-mark";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +35,7 @@ export function SiteHeader() {
           href="/"
           className="flex items-center gap-2 text-[13px] tracking-tight"
         >
+          <AcruxMark className="size-4 text-lightning" />
           <span className="font-bold text-foreground">acrux</span>
           <span className="hidden text-muted-foreground sm:inline">/</span>
           <span className="hidden font-medium text-muted-foreground sm:inline">

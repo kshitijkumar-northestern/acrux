@@ -40,7 +40,7 @@ const AMBIENT_RPS_AMPLITUDE = Math.max(
 // Two-frequency oscillation. Reads as live load with natural variability
 // rather than a flat tone, mirroring what regional probe meshes produce in
 // practice. Deterministic in `now` so concurrent viewers see consistent state.
-function ambientRps(now: number = Date.now()): number {
+export function ambientRps(now: number = Date.now()): number {
   const t = now / 1000;
   const wave = 0.6 * Math.sin(t / 7.3) + 0.4 * Math.sin(t / 2.1);
   return Math.max(0, AMBIENT_RPS_FLOOR + AMBIENT_RPS_AMPLITUDE * wave);

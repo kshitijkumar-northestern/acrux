@@ -73,7 +73,7 @@
   --border: oklch(1 0 0 / 13%);              /* alpha-200 */
   --input: oklch(1 0 0 / 13%);
   --ring: oklch(0.55 0 0);
-  --chart-1: oklch(0.78 0.15 70);
+  --chart-1: oklch(0.94 0.23 121);            /* accent #d3ff01 */
   --chart-2: oklch(0.6 0 0);
   --chart-3: oklch(0.45 0 0);
   --chart-4: oklch(0.35 0 0);
@@ -88,9 +88,10 @@
   --sidebar-border: oklch(1 0 0 / 13%);
   --sidebar-ring: oklch(0.55 0 0);
 
-  /* Reserved EXCLUSIVELY for the brand mark (Zap logo) and ::selection. */
-  --lightning: #f7931a;
-  --lightning-soft: rgba(247, 147, 26, 0.1);
+  /* Reserved EXCLUSIVELY for Lightning UI: sat amounts, sats in flight on
+     the landing field, the brand mark (Zap logo) and ::selection. */
+  --lightning: #d3ff01;
+  --lightning-soft: rgba(211, 255, 1, 0.1);
 
   /* Reserved EXCLUSIVELY for the live status dot (single instance per page). */
   --success: #00cc66;
@@ -135,5 +136,101 @@
   ::selection {
     background: var(--lightning);
     color: oklch(0 0 0);
+  }
+}
+
+/* Landing story (homepage only). Proximity snap lands each scroll gesture
+   on one phase without trapping the reader; the footer gets its own snap
+   point so the end of the page stays reachable. */
+html:has([data-story]) {
+  scroll-snap-type: y proximity;
+}
+[data-story-step] {
+  scroll-snap-align: start;
+}
+html:has([data-story]) body > footer {
+  scroll-snap-align: end;
+}
+/* Touch: every swipe lands on exactly one phase, the way the wheel and
+   arrow keys step through them on desktop. Trackpads keep proximity. */
+@media (pointer: coarse) {
+  html:has([data-story]) {
+    scroll-snap-type: y mandatory;
+  }
+  [data-story-step] {
+    scroll-snap-stop: always;
+  }
+}
+
+/* Story panels cross-fade; children enter in a short stagger and leave in
+   the direction of travel (up when scrolling down, down when scrolling up).
+   A light blur bridges the two panels so the swap reads as one change.
+   Exits are faster than entries. */
+@layer components {
+  .story-panel > * {
+    transition-property: opacity, transform, filter;
+    transition-duration: 700ms;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+    transition-delay: calc(140ms + var(--story-i, 0) * 60ms);
+  }
+  .story-panel > :nth-child(2) { --story-i: 1; }
+  .story-panel > :nth-child(3) { --story-i: 2; }
+  .story-panel > :nth-child(4) { --story-i: 3; }
+  .story-panel > :nth-child(5) { --story-i: 4; }
+  .story-panel:not([data-active]) > * {
+    opacity: 0;
+    filter: blur(4px);
+    transition-duration: 220ms;
+    transition-delay: 0ms;
+  }
+  .story-panel[data-side="before"]:not([data-active]) > * {
+    transform: translateY(-14px);
+  }
+  .story-panel[data-side="after"]:not([data-active]) > * {
+    transform: translateY(14px);
+  }
+  /* First paint: the opening panel staggers in instead of popping. */
+  @starting-style {
+    .story-panel[data-active] > * {
+      opacity: 0;
+      filter: blur(4px);
+      transform: translateY(14px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .story-panel > *,
+    .story-panel:not([data-active]) > * {
+      transform: none !important;
+      filter: none;
+      transition-property: opacity;
+      transition-duration: 160ms;
+      transition-delay: 0ms;
+    }
+  }
+}
+
+/* Rail fill follows the scroll position continuously where scroll-driven
+   animations exist; elsewhere it steps per phase (inline transform). */
+@supports (animation-timeline: view()) {
+  [data-story] {
+    view-timeline-name: --story;
+    view-timeline-axis: block;
+  }
+  [data-story-fill] {
+    animation-name: story-fill;
+    animation-duration: auto;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: --story;
+    animation-range: contain 0% contain 100%;
+  }
+}
+@keyframes story-fill {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
   }
 }
