@@ -1,4 +1,5 @@
 import { bootstrapDashboardStateIfEmpty } from "./dashboard-bootstrap";
+import { buildMockSnapshot } from "./dashboard-mock";
 import {
   ambientPaymentEvents,
   ambientSlashEvents,
@@ -34,6 +35,11 @@ export interface DashboardHealth {
 
 export interface DashboardSnapshot {
   ok: true;
+  // Where this snapshot's state came from. "redis" is attributable store
+  // state (possibly composed with the ambient stream in sandbox mode);
+  // "mock" is fully synthetic — served by ?mode=mock or as the sandbox
+  // fallback when Redis is unconfigured or failing.
+  source?: "redis" | "mock";
   price: WalletPriceQuote;
   stake: { pool: number; totalStaked: number };
   topStakers: WalletState[];
@@ -51,15 +57,19 @@ export interface DashboardError {
 
 export type DashboardResponse = DashboardSnapshot | DashboardError;
 
-// Two render modes for the dashboard. "Sandbox" composes the Redis-backed
+// Render modes for the dashboard. "Sandbox" composes the Redis-backed
 // ledgers with the observability stream so the panels reflect the full
 // network telemetry surface. "Live" bypasses the composition layer and
 // returns strictly Redis-attributed state — useful for verifying the
-// underlying ledger directly. Default is sandbox.
-export type DashboardMode = "sandbox" | "live";
+// underlying ledger directly. "Mock" is the dummy API: a fully synthetic
+// snapshot with zero Redis round trips, for demoing and testing the
+// dashboard without a backing store. Default is sandbox.
+export type DashboardMode = "sandbox" | "live" | "mock";
 
 export function parseDashboardMode(input: unknown): DashboardMode {
-  return input === "live" ? "live" : "sandbox";
+  if (input === "live") return "live";
+  if (input === "mock") return "mock";
+  return "sandbox";
 }
 
 const TOP_STAKERS_LIMIT = 10;
@@ -112,14 +122,32 @@ function probeMdk(): DashboardHealth["mdk"] {
   };
 }
 
+// After a Redis failure (quota exhausted, network down), sandbox mode serves
+// the mock snapshot directly for this long before re-attempting Redis. Keeps
+// the 1Hz poll from paying failed Upstash round trips on every tick while
+// still recovering within a minute of the store coming back.
+const REDIS_RETRY_COOLDOWN_MS = 30_000;
+let redisRetryAt = 0;
+
 // Single source of truth for the dashboard payload. Used by the API route at
 // 1Hz and by the SSR page render to seed the client without a first-paint
-// flicker. Returns a shape-stable error envelope on cold-start misconfig so
-// the page can render the offline panel directly from server HTML.
+// flicker.
+//
+// Degradation policy: sandbox (the default, public-facing view) never
+// returns an error envelope — if Redis is unconfigured or failing it serves
+// the fully synthetic mock snapshot so every panel stays populated. Live and
+// mock modes are explicit: live surfaces real errors (it exists to verify
+// the actual ledger), mock always returns the dummy payload.
 export async function getDashboardSnapshot(
   mode: DashboardMode = "sandbox",
 ): Promise<DashboardResponse> {
+  if (mode === "mock") return buildMockSnapshot();
+
+  const composeStreams = mode === "sandbox";
+  const fallbackToMock = mode === "sandbox";
+
   if (!isRedisConfigured()) {
+    if (fallbackToMock) return buildMockSnapshot();
     return {
       ok: false,
       error: "redis_not_configured",
@@ -129,7 +157,9 @@ export async function getDashboardSnapshot(
     };
   }
 
-  const composeStreams = mode === "sandbox";
+  if (fallbackToMock && Date.now() < redisRetryAt) {
+    return buildMockSnapshot();
+  }
 
   try {
     // Idempotent: writes the baseline only on a fresh Redis. Every subsequent
@@ -176,8 +206,10 @@ export async function getDashboardSnapshot(
       ? mergeAndCap(ambientSlashEvents(now), recentSlashes, RECENT_SLASHES_LIMIT)
       : recentSlashes;
 
+    redisRetryAt = 0;
     return {
       ok: true,
+      source: "redis",
       price,
       stake: { pool, totalStaked },
       topStakers,
@@ -187,6 +219,8 @@ export async function getDashboardSnapshot(
       generatedAt: new Date().toISOString(),
     };
   } catch (err) {
+    redisRetryAt = Date.now() + REDIS_RETRY_COOLDOWN_MS;
+    if (fallbackToMock) return buildMockSnapshot();
     return {
       ok: false,
       error: "dashboard_failed",

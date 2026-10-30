@@ -62,7 +62,7 @@ const SLASH_WALLETS: Array<{ wallet: string; reason: string }> = [
 
 // mulberry32: 32-bit PRNG with a fast, well-distributed cycle. Good enough
 // for visual variety in the event stream; not cryptographic.
-function seeded(seed: number): () => number {
+export function seeded(seed: number): () => number {
   let s = seed | 0;
   return () => {
     s = (s + 0x6d2b79f5) | 0;

@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { AcruxMark } from "@/components/site/acrux-mark";
+
 const PRIMITIVES = [
   { label: "Surge pricing", href: "/api/price" },
   { label: "Per-wallet pricing", href: "/api/ping" },
@@ -21,8 +23,9 @@ export function SiteFooter() {
           <div className="flex flex-col gap-3">
             <Link
               href="/"
-              className="text-[13px] font-bold tracking-tight text-foreground"
+              className="flex items-center gap-2 self-start text-[13px] font-bold tracking-tight text-foreground"
             >
+              <AcruxMark className="size-4 text-lightning" />
               acrux
             </Link>
             <p className="max-w-xs text-[13px] leading-[1.6] text-muted-foreground">

@@ -1,223 +1,242 @@
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
+import type { FieldCopy } from "@/components/landing/agent-field";
 import { LiveStatus } from "@/components/landing/live-status";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Story, type StoryStep } from "@/components/landing/story";
 import { getDashboardSnapshot } from "@/lib/dashboard-snapshot";
+import {
+  composeFinalPriceSats,
+  pricingConfig,
+  surgeMultiplier,
+} from "@/lib/pricing";
+import { walletMultiplier } from "@/lib/reputation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const PRIMITIVES = [
-  {
-    label: "surge",
-    title: "per-load surge pricing",
-    body: "Server load goes up, the Lightning invoice price goes up automatically. 1 sat at idle, 10,000 sats during a detected attack. Continuous curve.",
-  },
-  {
-    label: "wallet",
-    title: "per-wallet attacker pricing",
-    body: "We don't price the route, we price the paying wallet. Honest agents stay at base rate while one bad actor pays surge prices. Stripe physically cannot do this.",
-  },
-  {
-    label: "stake",
-    title: "reputation staking + slashing",
-    body: "Agents stake sats up front. Behave well → earn yield. Misbehave → stake gets slashed. The slashed pool pays the honest agents. Attackers fund their targets.",
-  },
-] as const;
+const NUM = new Intl.NumberFormat("en-US");
+const BASE = pricingConfig.basePriceSats;
+
+// Every number the story shows is computed from the live pricing engine so
+// the copy can't drift from what /api/price actually charges.
+//
+// Top of each load band on the surge curve (see surgeMultiplier).
+const SURGE_BANDS = [
+  { band: "idle", multiplier: surgeMultiplier(1) },
+  { band: "light", multiplier: surgeMultiplier(10) },
+  { band: "hot", multiplier: surgeMultiplier(100) },
+  { band: "attack", multiplier: pricingConfig.maxMultiplier },
+].map((b) => ({ ...b, sats: composeFinalPriceSats(BASE, b.multiplier, 1) }));
+
+const HOT = SURGE_BANDS[2];
+
+// One representative score per reputation tier (see tierFromScore).
+const TIERS = [
+  { tier: "trusted", multiplier: walletMultiplier(50) },
+  { tier: "neutral", multiplier: walletMultiplier(0) },
+  { tier: "suspicious", multiplier: walletMultiplier(-50) },
+  { tier: "abusive", multiplier: walletMultiplier(-51) },
+].map((t) => ({
+  ...t,
+  sats: composeFinalPriceSats(BASE, HOT.multiplier, t.multiplier),
+}));
+
+const TRUSTED = TIERS[0];
+const ABUSIVE = TIERS[3];
+
+const FIELD_COPY: FieldCopy = {
+  surge: SURGE_BANDS.map(({ band, sats }) => ({ band, sats })),
+  trusted: { label: `trusted ${NUM.format(TRUSTED.multiplier)}×`, sats: TRUSTED.sats },
+  abusive: { label: `abusive ${NUM.format(ABUSIVE.multiplier)}×`, sats: ABUSIVE.sats },
+};
+
+const H2 =
+  "max-w-[420px] text-balance text-3xl leading-[1.1] tracking-[-0.04em] sm:text-4xl";
+const BODY = "max-w-[44ch] text-[14px] leading-[1.6] text-muted-foreground";
 
 export default async function Home() {
-  // SSR-seed the landing's live panel so a cold visit paints the real
-  // system state (or the offline notice) on first frame — no skeleton flash.
+  // SSR-seed the live panel so a cold visit paints the real system state
+  // (or the offline notice) on first frame, no skeleton flash.
   const initialSnapshot = await getDashboardSnapshot();
-  return (
-    <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-24 px-6 py-20 sm:py-24 lg:gap-32 lg:px-8 lg:py-28">
-      <Hero />
-      <Primitives />
-      <LiveSection initial={initialSnapshot} />
-      <TryIt />
-    </div>
-  );
+
+  const steps: StoryStep[] = [
+    { id: "hero", label: "agents", content: <Hero /> },
+    { id: "swarm", label: "swarm", content: <Swarm /> },
+    { id: "surge", label: "surge", content: <Surge /> },
+    { id: "wallet", label: "wallet", content: <Wallet /> },
+    { id: "stake", label: "stake", content: <Stake /> },
+    { id: "live", label: "live", content: <Live initial={initialSnapshot} /> },
+  ];
+
+  return <Story steps={steps} copy={FIELD_COPY} />;
 }
+
+// Panel children are direct children of the story panel so each one picks
+// up its own stagger delay (see .story-panel in globals.css). Fragments keep
+// it that way.
 
 function Hero() {
   return (
-    <section className="grid items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,320px)] lg:gap-64">
-      <div className="flex flex-col gap-6">
-        <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-          Hacknation Challenge 02 · adaptive paywall on lightning
+    <>
+      <h1 className="text-4xl leading-[1.05] tracking-[-0.04em] sm:text-5xl">
+        <span className="block">Price attackers out</span>
+        <span className="block text-muted-foreground">pay honest agents back</span>
+      </h1>
+      <p className={BODY}>
+        <strong className="font-bold text-foreground">acrux</strong> is drop-in
+        Lightning middleware. Every call is priced by server load and by the
+        wallet paying for it.
+      </p>
+      <div className="flex flex-wrap items-center gap-2 pt-1">
+        <Link
+          href="/dashboard"
+          className="group inline-flex items-center gap-1.5 rounded-md bg-foreground px-2.5 py-1.5 text-[13px] font-medium text-background transition-[background-color,transform] hover:bg-foreground/90 active:scale-[0.97]"
+        >
+          network economics
+          <ArrowUpRight className="size-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+        </Link>
+        <Link
+          href="/api/price"
+          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background/60 px-2.5 py-1.5 font-mono text-[12px] font-medium text-foreground backdrop-blur transition-[background-color,transform] hover:bg-card active:scale-[0.97]"
+        >
+          curl /api/price
+        </Link>
+      </div>
+    </>
+  );
+}
+
+function Swarm() {
+  return (
+    <>
+      <h2 className={H2}>A million agents, one API</h2>
+      <p className={BODY}>
+        Autonomous agents will all hit the same endpoints. A swarm that rotates
+        IPs looks like everyone else, so rate limits and captchas can&apos;t
+        see it.
+      </p>
+      <p className={`${BODY} italic`}>
+        Charging for the API alone doesn&apos;t fix it. A rich attacker just
+        outspends the defense.
+      </p>
+    </>
+  );
+}
+
+function Surge() {
+  return (
+    <>
+      <h2 className={H2}>Load goes up, so does the price</h2>
+      <p className={BODY}>
+        Every call returns a Lightning invoice priced off live load. Agents
+        read the curve for free at{" "}
+        <code className="text-[13px] text-foreground">/api/price</code> before
+        they pay.
+      </p>
+      <div className="flex flex-col gap-2">
+        <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-border bg-border font-mono sm:grid-cols-4">
+          {SURGE_BANDS.map((b) => (
+            <div key={b.band} className="flex flex-col gap-1 bg-background px-3 py-2.5">
+              <dt className="text-[11px] text-muted-foreground">
+                {b.band} {NUM.format(b.multiplier)}×
+              </dt>
+              <dd className="text-[13px] tabular-nums text-lightning">
+                {NUM.format(b.sats)} sat
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <span className="font-mono text-[11px] text-muted-foreground">
+          per call, base price {NUM.format(BASE)} sat
         </span>
-        <h1 className="text-balance text-5xl leading-[1.05] tracking-[-0.04em] sm:text-6xl lg:text-7xl">
-          Price attackers out{" "}
-          <span className="text-muted-foreground">
-            pay honest agents back
-          </span>
-        </h1>
-        <p className="max-w-md text-[15px] leading-[1.6] text-muted-foreground sm:text-base">
-          <strong className="font-bold text-foreground">acrux</strong> is a
-          drop-in Lightning Network middleware. Per-load surge pricing,
-          per-wallet attacker pricing, and reputation staking with slashing.
-          Every transaction settles in milliseconds. No signups, no API keys,
-          no chargebacks.
-        </p>
-        <div className="flex flex-wrap items-center gap-2 pt-2">
-          <Link
-            href="/dashboard"
-            className="group inline-flex h-9 items-center gap-1.5 rounded-md bg-foreground px-3.5 text-[13px] font-medium text-background transition-colors hover:bg-foreground/90"
-          >
-            network economics
-            <ArrowUpRight className="size-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-          </Link>
-          <Link
-            href="/api/price"
-            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-border bg-transparent px-3.5 text-[13px] font-medium text-foreground transition-colors hover:bg-card"
-          >
-            curl /api/price
-          </Link>
-        </div>
       </div>
-      <HeroVisual className="order-first lg:order-none" />
-    </section>
+    </>
   );
 }
 
-// Crystal icosahedron sits to the right of the hero copy on lg+. The source
-// PNG has a near-black backdrop with no alpha channel; on a pure-black page
-// that integrates cleanly, but we still apply a radial mask + `mix-blend-mode:
-// lighten` so any compression noise at the corners cannot show as a faint
-// rectangle. Decorative only, hence the empty alt and aria-hidden.
-function HeroVisual({ className }: { className?: string }) {
+function Wallet() {
   return (
-    <div
-      aria-hidden
-      className={`relative mx-auto aspect-square w-full max-w-[260px] select-none lg:mx-0 lg:max-w-[320px] lg:justify-self-end${
-        className ? ` ${className}` : ""
-      }`}
-    >
-      <Image
-        src="/hero-crystal.png"
-        alt=""
-        fill
-        priority
-        sizes="(min-width: 1024px) 320px, 60vw"
-        className="pointer-events-none object-contain mix-blend-lighten [mask-image:radial-gradient(circle_at_center,black_55%,transparent_82%)]"
-      />
-    </div>
-  );
-}
-
-function Primitives() {
-  return (
-    <section className="flex flex-col gap-8">
-      <SectionLabel
-        eyebrow="Primitives"
-        heading="Three things acrux does that nothing else can"
-      />
-      <div className="grid gap-4 pt-12 sm:grid-cols-3">
-        {PRIMITIVES.map((p, i) => (
-          <Card
-            key={p.label}
-            className="relative overflow-visible bg-transparent ring-0"
-          >
-            <span
-              aria-hidden
-              className="pointer-events-none absolute -top-9 right-8 select-none text-[4.5rem] font-semibold leading-none tracking-tight text-foreground/15"
-            >
-              {String(i + 1).padStart(2, "0")}
-            </span>
-            <CardHeader>
-              <Badge
-                variant="outline"
-                className="h-[22px] self-start rounded-sm border-border bg-transparent px-1.5 font-mono text-[11px] tracking-normal text-muted-foreground"
-              >
-                {p.label}
-              </Badge>
-              <CardTitle className="text-[15px] font-semibold tracking-tight">
-                {p.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-[14px] leading-[1.6] text-muted-foreground">
-                {p.body}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+    <>
+      <h2 className={H2}>We price the wallet, not the route</h2>
+      <p className={BODY}>
+        Each L402 payment is tied to a wallet. Reputation sets that
+        wallet&apos;s multiplier, so under the same load an abusive wallet
+        pays {NUM.format(ABUSIVE.multiplier / TRUSTED.multiplier)}× what a
+        trusted one does.
+      </p>
+      <div className="flex flex-col gap-2">
+        <dl className="grid grid-cols-[1fr_auto_auto] gap-x-8 gap-y-2 rounded-md border border-border bg-background px-3.5 py-3 font-mono text-[13px]">
+          {TIERS.map((t) => {
+            // The two tiers the field labels get full weight; the middle
+            // tiers recede so the table reads like the picture.
+            const featured = t === TRUSTED || t === ABUSIVE;
+            return (
+              <div key={t.tier} className="contents">
+                <dt className={featured ? "text-foreground" : "text-muted-foreground"}>
+                  {t.tier}
+                </dt>
+                <dd
+                  className={`text-right tabular-nums ${featured ? "text-foreground" : "text-muted-foreground"}`}
+                >
+                  {NUM.format(t.multiplier)}×
+                </dd>
+                <dd
+                  className={`text-right tabular-nums ${featured ? "text-lightning" : "text-lightning/55"}`}
+                >
+                  {NUM.format(t.sats)} sat
+                </dd>
+              </div>
+            );
+          })}
+        </dl>
+        <span className="font-mono text-[11px] text-muted-foreground">
+          per call at hot load ({NUM.format(HOT.multiplier)}× surge)
+        </span>
       </div>
-    </section>
+    </>
   );
 }
 
-function LiveSection({
+function Stake() {
+  return (
+    <>
+      <h2 className={H2}>Attackers fund the agents they attack</h2>
+      <p className={BODY}>
+        Agents stake sats up front. Abusive wallets get slashed into a shared
+        pool, and the pool pays trusted stakers back pro-rata.
+      </p>
+      <p className={`${BODY} italic`}>
+        Cards can&apos;t do this. A chargeback would reverse the slash.
+      </p>
+    </>
+  );
+}
+
+function Live({
   initial,
 }: {
   initial: Awaited<ReturnType<typeof getDashboardSnapshot>>;
 }) {
   return (
-    <section className="flex flex-col gap-8">
-      <SectionLabel
-        eyebrow="Live status"
-        heading="Real numbers from Redis"
-        description="Pulled from /api/dashboard. Signet (mutinynet)."
-      />
+    <>
+      <h2 className={H2}>Real numbers from Redis</h2>
+      <p className={BODY}>
+        Polled from <code className="text-[13px] text-foreground">/api/dashboard</code>{" "}
+        every two seconds, on signet (mutinynet).
+      </p>
       <LiveStatus initial={initial} />
-    </section>
-  );
-}
-
-function TryIt() {
-  return (
-    <section className="flex flex-col gap-8">
-      <SectionLabel
-        eyebrow="Try it"
-        heading="No signups, no keys, just curl"
-      />
-      <Card size="sm" className="bg-black/40">
-        <CardContent className="flex flex-col gap-2 font-mono text-[12px] leading-[1.6]">
-          <div className="text-muted-foreground">
-            # Free price quote · read the live surge multiplier
-          </div>
-          <div>
-            <span className="text-muted-foreground">$</span> curl
-            localhost:3000/api/price
-          </div>
-          <div className="pt-2 text-muted-foreground">
-            # Paywalled ping · returns 402 + Lightning invoice on first hit
-          </div>
-          <div>
-            <span className="text-muted-foreground">$</span> curl -i
-            localhost:3000/api/ping
-          </div>
-        </CardContent>
-      </Card>
-    </section>
-  );
-}
-
-function SectionLabel({
-  eyebrow,
-  heading,
-  description,
-}: {
-  eyebrow: string;
-  heading: string;
-  description?: string;
-}) {
-  return (
-    <div className="flex flex-col gap-3">
-      <span className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-        {eyebrow}
-      </span>
-      <h2 className="max-w-2xl text-balance text-3xl leading-[1.15] tracking-[-0.04em] sm:text-4xl">
-        {heading}
-      </h2>
-      {description ? (
-        <p className="max-w-2xl text-[14px] leading-[1.6] text-muted-foreground">
-          {description}
-        </p>
-      ) : null}
-    </div>
+      <div className="flex flex-col gap-1 font-mono text-[12px] leading-[1.6]">
+        <div>
+          <span className="text-muted-foreground">$</span> curl
+          localhost:3000/api/price
+        </div>
+        <div>
+          <span className="text-muted-foreground">$</span> curl -i
+          localhost:3000/api/ping{" "}
+          <span className="hidden text-muted-foreground sm:inline"># 402 + invoice</span>
+        </div>
+      </div>
+    </>
   );
 }

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="160" height="160" role="img" aria-label="acrux">
+  <!-- acrux mark: two chamfered halves, rotationally symmetric, meeting at their inner corners. 10-unit grid, 2-unit bars. -->
+  <path fill="#d3ff01" d="M2 0h6l2 2v6H8V2H2ZM8 10H2L0 8V2h2v6h6Z"/>
+</svg>

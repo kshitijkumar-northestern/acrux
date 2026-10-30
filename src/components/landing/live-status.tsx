@@ -44,7 +44,7 @@ export function LiveStatus({ initial }: { initial: DashboardResponse | null }) {
               >
                 {r.done ? "▸" : "○"}
               </span>
-              <span className="w-44 shrink-0 text-muted-foreground">
+              <span className="w-36 shrink-0 text-muted-foreground sm:w-44">
                 {r.label}
               </span>
               <span
