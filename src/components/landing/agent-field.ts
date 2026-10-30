@@ -219,7 +219,7 @@ export function createAgentField(
     const desktop = width >= 1024;
     return desktop
       ? { cx: width * 0.68, cy: height * 0.53, r: Math.min(width * 0.23, height * 0.34) }
-      : { cx: width * 0.5, cy: height * 0.35, r: Math.min(width * 0.4, height * 0.24) };
+      : { cx: width * 0.5, cy: height * 0.31, r: Math.min(width * 0.38, height * 0.21) };
   }
 
   function target(a: Agent, t: number) {
@@ -404,7 +404,8 @@ export function createAgentField(
   function draw(now: number) {
     if (!ctx) return;
     const { cx, cy, r } = viewport();
-    const scale = r * cam.zoom;
+    // Phones have little room above the copy, so the camera never zooms in.
+    const scale = r * (width >= 1024 ? cam.zoom : Math.min(1, cam.zoom));
     const px = (x: number) => cx + (x - cam.ox) * scale;
     const py = (y: number) => cy + (y - cam.oy) * scale;
 
@@ -542,6 +543,9 @@ export function createAgentField(
         [`${read.band} load`, MUTED],
       ], tagAlpha.price * dim, "left");
     }
+    // Cluster tags sit above the field; on phones there is no room for them
+    // under the legend, and the panel table right below repeats the numbers.
+    const clusterTags = width >= 640 ? dim : 0;
     const hx = px(0);
     const hy = py(-0.98);
     const kx = px(ATTACK_CLUSTER.x);
@@ -549,19 +553,19 @@ export function createAgentField(
     tag(hx, hy, [
       [copy.trusted.label, MUTED],
       [`${SAT_FMT.format(copy.trusted.sats)} sat/call`, SAT],
-    ], tagAlpha["trusted-price"] * dim, "center");
+    ], tagAlpha["trusted-price"] * clusterTags, "center");
     tag(kx, ky, [
       [copy.abusive.label, MUTED],
       [`${SAT_FMT.format(copy.abusive.sats)} sat/call`, SAT],
-    ], tagAlpha["abusive-price"] * dim, "center");
+    ], tagAlpha["abusive-price"] * clusterTags, "center");
     tag(hx, hy, [
       ["trusted", MUTED],
       ["earning yield", SAT],
-    ], tagAlpha["trusted-yield"] * dim, "center");
+    ], tagAlpha["trusted-yield"] * clusterTags, "center");
     tag(kx, ky, [
       ["abusive", MUTED],
       ["stake slashed", FG],
-    ], tagAlpha["abusive-slash"] * dim, "center");
+    ], tagAlpha["abusive-slash"] * clusterTags, "center");
 
     ctx.globalAlpha = 1;
   }
